@@ -1,0 +1,294 @@
+/**
+ * Meta Business Agent Studio - Step 8 Live Playground & Neural Entity Inspector
+ * High-end Enterprise B2B Simulator
+ */
+
+.smax-playground-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 20px;
+  align-items: stretch;
+  min-height: 580px;
+}
+
+@media (max-width: 900px) {
+  .smax-playground-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Chat Simulator Panel (Left) */
+.smax-chat-simulator {
+  background: #ffffff;
+  border: 1px solid var(--smax-border-main);
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.smax-chat-header {
+  background: var(--smax-brand-dark);
+  color: #ffffff;
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.smax-chat-agent-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.smax-agent-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #eb6553, #d85240);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 16px;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(235, 101, 83, 0.35);
+}
+
+.smax-agent-meta {
+  display: flex;
+  flex-direction: column;
+}
+
+.smax-agent-name {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.1px;
+}
+
+.smax-agent-status {
+  font-size: 11.5px;
+  color: #34d399;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.smax-agent-status::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background-color: #34d399;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 8px #34d399;
+}
+
+/* Chat Messages Container */
+.smax-chat-messages {
+  flex: 1;
+  padding: 18px;
+  background-color: #f8fafc;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 420px;
+  min-height: 360px;
+}
+
+.smax-msg-row {
+  display: flex;
+  gap: 8px;
+  max-width: 84%;
+  animation: msgPop 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes msgPop {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.smax-msg-row.user {
+  align-self: flex-end;
+  flex-direction: row-reverse;
+}
+
+.smax-msg-row.bot {
+  align-self: flex-start;
+}
+
+.smax-msg-bubble {
+  padding: 10px 16px;
+  border-radius: 18px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.smax-msg-row.user .smax-msg-bubble {
+  background-color: var(--smax-coral);
+  color: #ffffff;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 2px 8px rgba(235, 101, 83, 0.25);
+}
+
+.smax-msg-row.bot .smax-msg-bubble {
+  background-color: #ffffff;
+  color: var(--smax-ink-primary);
+  border: 1px solid var(--smax-border-main);
+  border-bottom-left-radius: 4px;
+  box-shadow: var(--shadow-subtle);
+}
+
+.smax-msg-time {
+  font-size: 10.5px;
+  color: var(--smax-ink-subtle);
+  margin-top: 4px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Typing Indicator */
+.smax-typing-bubble {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 16px;
+  background: #ffffff;
+  border: 1px solid var(--smax-border-main);
+  border-radius: 18px;
+  width: fit-content;
+  box-shadow: var(--shadow-subtle);
+}
+
+.smax-typing-dot {
+  width: 6px;
+  height: 6px;
+  background-color: var(--smax-coral);
+  border-radius: 50%;
+  animation: typingBlink 1.2s infinite ease-in-out;
+}
+
+.smax-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+.smax-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes typingBlink {
+  0%, 80%, 100% { opacity: 0.3; transform: scale(0.8); }
+  40% { opacity: 1; transform: scale(1.1); }
+}
+
+/* Suggestion Chips */
+.smax-chat-suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 16px;
+  background: #ffffff;
+  border-top: 1px solid var(--smax-border-light);
+}
+
+.smax-chip-btn {
+  background: #f8fafc;
+  border: 1px solid var(--smax-border-main);
+  color: var(--smax-ink-secondary);
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.smax-chip-btn:hover {
+  background: var(--smax-coral-light);
+  border-color: var(--smax-coral);
+  color: var(--smax-coral);
+}
+
+/* Chat Input Bar */
+.smax-chat-input-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: #ffffff;
+  border-top: 1px solid var(--smax-border-main);
+}
+
+.smax-chat-input-bar input {
+  flex: 1;
+  padding: 9px 14px;
+  border: 1px solid var(--smax-border-main);
+  border-radius: 100px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.15s ease;
+}
+
+.smax-chat-input-bar input:focus {
+  border-color: var(--smax-coral);
+  box-shadow: 0 0 0 3px var(--smax-coral-light);
+}
+
+/* Inspector Panel (Right) */
+.smax-inspector-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.smax-inspector-card {
+  background: #ffffff;
+  border: 1px solid var(--smax-border-main);
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.smax-inspector-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--smax-border-light);
+}
+
+.smax-inspector-title {
+  font-family: var(--font-heading);
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--smax-ink-primary);
+}
+
+.smax-entity-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: var(--smax-ink-primary);
+  border: 1px solid var(--smax-border-main);
+}
+
+.smax-rag-reference-box {
+  background: #f8fafc;
+  border: 1px solid var(--smax-border-main);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  color: var(--smax-ink-secondary);
+  font-family: var(--font-mono);
+  margin-top: 8px;
+  line-height: 1.4;
+}

@@ -1,0 +1,19 @@
+{
+  "name": "metabizai-smax-studio",
+  "version": "1.0.0",
+  "description": "Meta Business Agent Setup Studio Embedded in Smax.ai",
+  "main": "src/index.html",
+  "scripts": {
+    "dev": "npx -y serve src -p 3000",
+    "start": "npx -y serve src -p 3000"
+  },
+  "keywords": [
+    "meta-business-agent",
+    "smax-ai",
+    "chatbot",
+    "handover-protocol",
+    "setup-wizard"
+  ],
+  "author": "Antigravity",
+  "license": "MIT"
+}

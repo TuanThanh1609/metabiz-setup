@@ -1,0 +1,7 @@
+{
+  "name": "abera-dashboard",
+  "version": "1.0.0",
+  "description": "Abera Dashboard",
+  "type": "module",
+  "private": true
+}

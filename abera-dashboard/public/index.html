@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ABERA STORE - Phễu Chuyển Đổi WhatsApp</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .bar-transition {
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f8fafc; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 3px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+    <div id="app" class="flex-grow max-w-6xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-8 bg-white shadow-sm min-h-screen">
+        
+        <!-- Header -->
+        <header class="flex flex-col md:flex-row md:justify-between md:items-end border-b border-slate-200 pb-6 space-y-4 md:space-y-0">
+            <div>
+                <div class="inline-block px-2.5 py-0.5 mb-2 bg-blue-50 text-blue-700 text-xs font-semibold rounded uppercase tracking-wider border border-blue-200">
+                    Real-time Meta Business Agent Dashboard
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">ABERA STORE — Phễu Chuyển Đổi WhatsApp</h1>
+                <p class="text-slate-500 mt-1 text-sm">Theo dõi hiệu suất phễu bán hàng & kịch bản tư vấn AI tự động</p>
+            </div>
+            <div class="flex flex-col md:items-end space-y-2">
+                <div class="flex items-center space-x-2">
+                    <span class="px-3 py-1 bg-blue-600 text-white font-semibold rounded-full text-xs tracking-wide">
+                        Tổng hội thoại (<span id="header-range-text">Chu kỳ v1.5</span>): <span id="header-total-count" class="font-bold">--</span>
+                    </span>
+                    <button id="btn-refresh" class="px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-full hover:bg-blue-100 transition-colors">
+                        Làm mới ngay
+                    </button>
+                </div>
+                <div class="text-xs text-slate-500 md:text-right">
+                    Cập nhật lần cuối: <span id="last-updated" class="font-medium text-slate-700">--:--:--</span> | 
+                    Tự động cập nhật sau: <span id="countdown" class="font-mono font-bold text-blue-600">15:00</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Status Alert -->
+        <div id="status-container" class="hidden"></div>
+
+        <!-- Filter Controls (Text-only, no icons) -->
+        <section class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-lg p-3.5">
+            <div class="flex items-center space-x-2">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-700">Bộ lọc thời gian:</span>
+                <span id="active-range-badge" class="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                    Chu kỳ v1.5 (Gần nhất)
+                </span>
+            </div>
+            <div class="flex flex-wrap items-center gap-2" id="filter-buttons">
+                <button data-range="cycle" class="btn-range px-3 py-1.5 text-xs font-semibold rounded-md transition-colors bg-blue-600 text-white shadow-sm">
+                    Chu kỳ v1.5 (Gần nhất)
+                </button>
+                <button data-range="today" class="btn-range px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
+                    Hôm nay (30/09)
+                </button>
+                <button data-range="24h" class="btn-range px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
+                    24 giờ qua
+                </button>
+                <button data-range="all" class="btn-range px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-white text-slate-700 hover:bg-slate-100 border border-slate-200">
+                    Toàn bộ lịch sử
+                </button>
+            </div>
+        </section>
+
+        <!-- KPI Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-white border border-slate-200 p-5 rounded-lg shadow-sm">
+                <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Tổng Hội Thoại</div>
+                <div class="text-3xl font-extrabold text-slate-900" id="kpi-total">--</div>
+                <div class="text-xs text-slate-500 mt-1" id="kpi-total-desc">Từ mốc deploy v1.5 (29/09 15:30)</div>
+            </div>
+            <div class="bg-white border border-slate-200 p-5 rounded-lg shadow-sm">
+                <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Tỷ Lệ Chốt Đơn</div>
+                <div class="text-3xl font-extrabold text-blue-600" id="kpi-closing">--%</div>
+                <div class="text-xs font-medium text-slate-600 mt-1">Mục tiêu KPI: <span class="font-bold text-slate-900">≥10%</span></div>
+            </div>
+            <div class="bg-white border border-slate-200 p-5 rounded-lg shadow-sm">
+                <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Điểm Nghẽn Lớn Nhất</div>
+                <div class="text-xl font-bold text-slate-900" id="kpi-dropoff-name">--</div>
+                <div class="text-sm text-red-600 font-bold mt-1" id="kpi-dropoff-val">--%</div>
+            </div>
+            <div class="bg-white border border-slate-200 p-5 rounded-lg shadow-sm">
+                <div class="text-slate-500 text-xs font-semibold uppercase tracking-wider mb-1">Đánh Giá Mục Tiêu</div>
+                <div class="text-xl font-bold" id="kpi-status">--</div>
+                <div class="text-xs text-slate-500 mt-1" id="kpi-status-desc">Dựa trên tỷ lệ chốt đơn mục tiêu 10%</div>
+            </div>
+        </section>
+
+        <!-- Main Funnel Visualization -->
+        <section class="border border-slate-200 rounded-lg p-6 bg-white shadow-sm">
+            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-slate-100 pb-4 mb-6">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Phễu Mục Tiêu — So Sánh Thực Đạt & KPI</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Biểu đồ thu hẹp dần mô phỏng dòng chuyển đổi khách hàng qua từng giai đoạn</p>
+                </div>
+                <div class="flex items-center space-x-4 text-xs font-medium text-slate-600 mt-2 sm:mt-0">
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-3 h-3 bg-blue-600 rounded-sm inline-block"></span>
+                        <span>Thực tế (%)</span>
+                    </div>
+                    <div class="flex items-center space-x-1.5">
+                        <span class="w-3 h-0.5 border-t-2 border-dashed border-slate-400 inline-block"></span>
+                        <span>Mục tiêu KPI</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Funnel Bars Container -->
+            <div id="funnel-container" class="space-y-5 flex flex-col items-center">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- Stage Detail Table -->
+        <section class="border border-slate-200 rounded-lg shadow-sm bg-white overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                <h2 class="text-base font-bold text-slate-900">Bảng Đối Chiếu Chi Tiết 8 Bước Phễu (v1.4)</h2>
+                <span class="text-xs text-slate-500">Đơn vị: Hội thoại / Tỷ lệ %</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200 font-semibold">
+                        <tr>
+                            <th class="px-6 py-3.5">Bước</th>
+                            <th class="px-6 py-3.5">Tên Giai Đoạn</th>
+                            <th class="px-6 py-3.5 text-right">Số Hội Thoại</th>
+                            <th class="px-6 py-3.5 text-right">Tỷ Lệ Thực</th>
+                            <th class="px-6 py-3.5 text-right">Mục Tiêu KPI</th>
+                            <th class="px-6 py-3.5 text-right">Chênh Lệch</th>
+                            <th class="px-6 py-3.5 text-center">Trạng Thái</th>
+                        </tr>
+                    </thead>
+                    <tbody id="table-body" class="divide-y divide-slate-100">
+                        <!-- Dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Cycle Tracking Table (From CHANGELOG-META-AGENT.md) -->
+        <section class="border border-slate-200 rounded-lg shadow-sm bg-white overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">Bảng Theo Dõi Tỷ Lệ Chốt Đơn Theo Chu Kỳ (6 Tiếng/Lần)</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Vòng lặp tự động đánh giá và tối ưu cho đến khi đạt mục tiêu ≥10%</p>
+                </div>
+                <span class="text-xs font-semibold px-2.5 py-1 bg-amber-50 text-amber-800 rounded border border-amber-200">
+                    Mục tiêu: ≥10%
+                </span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm whitespace-nowrap">
+                    <thead class="bg-slate-50 text-slate-600 text-xs uppercase border-b border-slate-200 font-semibold">
+                        <tr>
+                            <th class="px-6 py-3">Chu Kỳ</th>
+                            <th class="px-6 py-3">Thời Gian Đánh Giá</th>
+                            <th class="px-6 py-3 text-right">Tổng Hội Thoại</th>
+                            <th class="px-6 py-3 text-right">Đơn Chốt</th>
+                            <th class="px-6 py-3 text-right">Tỷ Lệ Chốt</th>
+                            <th class="px-6 py-3 text-right">Mục Tiêu</th>
+                            <th class="px-6 py-3 text-center">Đánh Giá</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cycles-table-body" class="divide-y divide-slate-100">
+                        <!-- Dynamically populated -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Confirmed Orders Section -->
+        <section class="border border-slate-200 rounded-lg shadow-sm bg-white p-6">
+            <div class="flex justify-between items-center border-b border-slate-100 pb-3 mb-4">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900">Danh Sách Đơn Hàng Thành Công</h2>
+                    <p class="text-xs text-slate-500 mt-0.5">Khách hàng đã chốt đơn thành công hoặc được gắn tag "thành công" trong khoảng thời gian đã chọn</p>
+                </div>
+                <span id="orders-count-badge" class="px-2.5 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded border border-emerald-200">
+                    -- Đơn hàng
+                </span>
+            </div>
+            <div id="orders-container" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- Optimization Changelog (From CHANGELOG-META-AGENT.md) -->
+        <section class="border border-slate-200 rounded-lg shadow-sm bg-white">
+            <button id="changelog-toggle" class="w-full px-6 py-4 flex justify-between items-center focus:outline-none hover:bg-slate-50 transition-colors">
+                <div>
+                    <h2 class="text-base font-bold text-slate-900 text-left">Lịch Sử Cập Nhật Kịch Bản (Changelog Chi Tiết)</h2>
+                    <p class="text-xs text-slate-500 mt-0.5 text-left">Ghi chép toàn bộ các phiên bản tối ưu kịch bản từ 0:00 ngày 29/09/2026</p>
+                </div>
+                <span id="changelog-indicator" class="text-xs font-semibold px-2.5 py-1 bg-slate-100 text-slate-700 rounded border border-slate-200">
+                    Xem chi tiết [+]
+                </span>
+            </button>
+            <div id="changelog-content" class="hidden px-6 pb-6 pt-2 space-y-4 border-t border-slate-100">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+        <!-- Backlog & Next Steps -->
+        <section class="border border-slate-200 rounded-lg shadow-sm bg-white p-6">
+            <div class="border-b border-slate-100 pb-3 mb-4">
+                <h2 class="text-base font-bold text-slate-900">Hạng Mục Đề Xuất & Roadmap Tối Ưu (Backlog)</h2>
+                <p class="text-xs text-slate-500 mt-0.5">Các giải pháp tối ưu tiếp theo để đẩy tỷ lệ chốt đơn vượt mốc 10%</p>
+            </div>
+            <div id="backlog-container" class="space-y-2">
+                <!-- Dynamically populated -->
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-6 mt-8">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row justify-between items-center text-xs space-y-2 md:space-y-0">
+            <p>Dữ liệu đồng bộ tự động 15 phút/lần từ Smax API (wa1360084207181848 - Abera Store)</p>
+            <p>Phiên bản hệ thống: Meta Business Agent v1.4 | Antigravity AWF</p>
+        </div>
+    </footer>
+
+    <script>
+        const REFRESH_INTERVAL_MS = 15 * 60 * 1000; // 15 minutes
+        let nextRefreshTime = 0;
+        let countdownTimer = null;
+
+        // Visual width for funnel narrowing effect
+        const funnelWidths = ['100%', '93%', '86%', '79%', '72%', '65%', '58%', '51%'];
+        const circleNums = ['①', '②', '🆕', '③', '④', '⑤', '⑥', '⑦'];
+
+        // Fallback mock data in case API is temporarily unavailable
+        const fallbackData = {
+            range: "cycle",
+            rangeLabel: "Chu kỳ v1.5 (từ 29/09 15:30 đến nay)",
+            totalConversations: 46,
+            funnel: [
+                { stage: 1, name: "Welcome/Hook (nút chẩn đoán da)", count: 46, rate: 100.0, target: 90 },
+                { stage: 2, name: "Chọn vấn đề da", count: 39, rate: 84.8, target: 70 },
+                { stage: 3, name: "USP Product Image (keunggulan)", count: 15, rate: 32.6, target: 60 },
+                { stage: 4, name: "Tư vấn ngắn + Social Proof", count: 30, rate: 65.2, target: 50 },
+                { stage: 5, name: "Xem giá Decoy Pricing", count: 23, rate: 50.0, target: 45 },
+                { stage: 6, name: "Checkout + 3 Cam kết vàng", count: 8, rate: 17.4, target: 25 },
+                { stage: 7, name: "Thu thập địa chỉ", count: 5, rate: 10.9, target: 15 },
+                { stage: 8, name: "Xác nhận đơn hàng", count: 5, rate: 10.9, target: 10 }
+            ],
+            confirmedOrders: [
+                { name: "Maria Jenny", tid: "waID.1646040990337048", status: "Đã chốt (Paket 2 - COD Rp 273k)", time: "2026-09-29T16:20:00Z" },
+                { name: "misbah", tid: "waID.1033293329743833", status: "Đã gắn tag thành công", time: "2026-09-30T01:45:00Z" },
+                { name: "Eske", tid: "waID.1815092426314563", status: "Đã gắn tag thành công", time: "2026-09-30T03:10:00Z" },
+                { name: "mama satriya", tid: "waID.1145226074501912", status: "Đã chốt COD", time: "2026-09-29T19:30:00Z" },
+                { name: "Ribkah", tid: "waID.1095461830122835", status: "Đang chốt Paket 1", time: "2026-09-29T20:15:00Z" }
+            ],
+            cycles: [
+                { cycle: "#0", time: "29/09 00:00–09:30", convos: 57, orders: 2, rate: "3.5%", target: "10%", status: "Chưa đạt", isCurrent: false },
+                { cycle: "#1", time: "29/09 15:30 – 30/09 11:30", convos: 46, orders: 5, rate: "10.9%", target: "10%", status: "Đạt KPI", isCurrent: true },
+                { cycle: "#2", time: "30/09 ~17:30", convos: "--", orders: "--", rate: "--", target: "10%", status: "Đang chạy...", isCurrent: false }
+            ],
+            changelog: [
+                {
+                    version: "v1.5",
+                    date: "29/09/2026, 18:00",
+                    title: "Price Inquiry Exit Condition & Anti-Block",
+                    author: "User + AI Agent",
+                    problem: "Khách hỏi giá bị AI ép xem testimoni thay vì trả lời (do rule cấm nhắc giá quá chặt).",
+                    items: [
+                        "abera-skin-consultation: Thêm EXIT CONDITION khi khách hỏi giá → chuyển ngay sang pricing.",
+                        "Đổi rule 'DO NOT mention prices' thành 'DO NOT proactively mention prices'.",
+                        "Thêm guardrail cấm chặn khách hỏi giá. Đã giúp chốt đơn Maria Jenny Paket 2 thành công 100%."
+                    ]
+                },
+                {
+                    version: "v1.4",
+                    date: "29/09/2026, 15:35",
+                    title: "USP Product Image Integration",
+                    author: "User + AI Agent",
+                    problem: "Drop-off lớn nhất ④→⑤ (-46.5%) — khách chưa hiểu giá trị sản phẩm trước khi thấy giá.",
+                    items: [
+                        "abera-usp-product-image (🆕 UI Skill): Tạo mới — gửi hình USP keunggulan sản phẩm (Image type).",
+                        "abera-skin-consultation: +Step 2 mới — trigger hình USP sau tư vấn thành phần, TRƯỚC testimoni & giá.",
+                        "Flow mới: Welcome → Tư vấn da → 🆕 USP Image → Social Proof → Giá → Checkout."
+                    ]
+                },
+                {
+                    version: "v1.3",
+                    date: "29/09/2026, 11:10",
+                    title: "Social Proof + Urgency Timer + Anti-Upsell",
+                    author: "AI Agent",
+                    problem: "Mất đơn Yuni Wahyuni do AI chèo kéo upsell combo khi khách đã chốt mua 1 lọ.",
+                    items: [
+                        "abera-pricing-promotions: Thêm bước Social Proof (ảnh testimoni) bắt buộc + Urgency timer 2 giờ.",
+                        "abera-order-checkout: Thêm CRITICAL NO UPSELL — cấm 100% việc gợi ý gói đắt hơn khi đang checkout.",
+                        "abera-objection-handler: Phân tách rõ 'chê đắt' khi đã chọn gói thì không upsell mà thu địa chỉ ngay."
+                    ]
+                },
+                {
+                    version: "v1.2",
+                    date: "29/09/2026, 10:45",
+                    title: "Fix Response Quá Dài & Skill Trigger Order",
+                    author: "AI Agent",
+                    problem: "AI dump bảng giá 150-200 từ ở tin nhắn đầu do Meta AI dùng intent matching bỏ qua thứ tự skill.",
+                    items: [
+                        "abera-welcome-router: Bắt buộc kích hoạt đầu tiên trên mọi tin nhắn mở đầu, giới hạn 60 từ, loại bỏ hoàn toàn giá.",
+                        "abera-skin-consultation: Giới hạn 50 từ/tin, 1 câu hỏi/lần, cấm nhắc giá.",
+                        "abera-pricing-promotions: Chuyển sang dạng Compact (~40 từ), giới hạn tối đa 80 từ."
+                    ]
+                },
+                {
+                    version: "v1.1",
+                    date: "29/09/2026, 09:40",
+                    title: "Fix Thứ Tự Trigger Phễu & 3 Cam Kết Vàng",
+                    author: "AI Agent",
+                    problem: "Báo giá quá sớm (70% cuộc trò chuyện) và thiếu cam kết vàng khi checkout (36%).",
+                    items: [
+                        "abera-welcome-router: Khách hỏi giá vẫn ưu tiên chào và hiển thị nút chẩn đoán da.",
+                        "abera-pricing-promotions: Thêm Critical Gate chặn kích hoạt ở tin đầu.",
+                        "abera-order-checkout: Bắt buộc 100% tin nhắn checkout phải có 3 Cam kết vàng (COD, Cek Barang, BPOM)."
+                    ]
+                },
+                {
+                    version: "v1.0",
+                    date: "29/09/2026, 00:00",
+                    title: "Khởi Tạo Kịch Bản Mới Lần 1",
+                    author: "User + AI Agent",
+                    problem: "WhatsApp Flow crash trên nhiều thiết bị khách hàng, form không mở được.",
+                    items: [
+                        "Gỡ bỏ hoàn toàn WhatsApp Flow abera-order-flow khỏi Kỹ Năng UI.",
+                        "Khôi phục abera-order-checkout theo luồng thu thập thông tin trực tiếp qua chat.",
+                        "Phân nhánh địa lý: Pulau Jawa (100% COD) và Luar Jawa (DP 30% BCA)."
+                    ]
+                }
+            ],
+            backlog: [
+                { id: "B1", task: "Social Proof (testimoni) bắt buộc giữa Giá & Checkout", status: "Đã triển khai v1.3", impact: "Tăng ③→④ conversion" },
+                { id: "B2", task: "Urgency timer ('promo hết trong 2 giờ')", status: "Đã triển khai v1.3", impact: "Tăng ④→⑤ conversion" },
+                { id: "B3", task: "Anti-upsell khi khách chê đắt hoặc đã chọn gói", status: "Đã triển khai v1.3", impact: "Giảm rớt đơn tại checkout" },
+                { id: "B4", task: "USP Product Image — hình keunggulan sản phẩm", status: "Đã triển khai v1.4", impact: "Value building trước pricing" },
+                { id: "B5", task: "Tối ưu Follow-up sequence cho khách im lặng", status: "Đang theo dõi", impact: "Tăng tỷ lệ re-engagement" },
+                { id: "B6", task: "Phân loại khách theo nguồn (CTWA Ads vs Organic)", status: "Chờ triển khai", impact: "Tối ưu chi phí quảng cáo" }
+            ]
+        };
+
+        // Current filter state
+        let currentRange = 'cycle';
+
+        // DOM Elements
+        const elLastUpdated = document.getElementById('last-updated');
+        const elCountdown = document.getElementById('countdown');
+        const elHeaderTotal = document.getElementById('header-total-count');
+        const elHeaderRangeText = document.getElementById('header-range-text');
+        const elActiveRangeBadge = document.getElementById('active-range-badge');
+        const elKpiTotal = document.getElementById('kpi-total');
+        const elKpiTotalDesc = document.getElementById('kpi-total-desc');
+        const elKpiClosing = document.getElementById('kpi-closing');
+        const elKpiDropoffName = document.getElementById('kpi-dropoff-name');
+        const elKpiDropoffVal = document.getElementById('kpi-dropoff-val');
+        const elKpiStatus = document.getElementById('kpi-status');
+        const elKpiStatusDesc = document.getElementById('kpi-status-desc');
+        const elFunnelContainer = document.getElementById('funnel-container');
+        const elTableBody = document.getElementById('table-body');
+        const elCyclesTableBody = document.getElementById('cycles-table-body');
+        const elOrdersContainer = document.getElementById('orders-container');
+        const elOrdersCountBadge = document.getElementById('orders-count-badge');
+        const elStatusContainer = document.getElementById('status-container');
+        const elChangelogToggle = document.getElementById('changelog-toggle');
+        const elChangelogContent = document.getElementById('changelog-content');
+        const elChangelogIndicator = document.getElementById('changelog-indicator');
+        const elBacklogContainer = document.getElementById('backlog-container');
+        const btnRefresh = document.getElementById('btn-refresh');
+        const filterButtons = document.querySelectorAll('.btn-range');
+
+        // Toggle Changelog
+        elChangelogToggle.addEventListener('click', () => {
+            elChangelogContent.classList.toggle('hidden');
+            elChangelogIndicator.textContent = elChangelogContent.classList.contains('hidden') ? 'Xem chi tiết [+]' : 'Thu gọn [-]';
+        });
+
+        // Filter button click events
+        filterButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const range = btn.getAttribute('data-range');
+                if (range === currentRange) return;
+                currentRange = range;
+
+                // Update active button state
+                filterButtons.forEach(b => {
+                    if (b.getAttribute('data-range') === currentRange) {
+                        b.className = 'btn-range px-3 py-1.5 text-xs font-semibold rounded-md transition-colors bg-blue-600 text-white shadow-sm';
+                    } else {
+                        b.className = 'btn-range px-3 py-1.5 text-xs font-medium rounded-md transition-colors bg-white text-slate-700 hover:bg-slate-100 border border-slate-200';
+                    }
+                });
+
+                fetchData(currentRange);
+            });
+        });
+
+        btnRefresh.addEventListener('click', () => {
+            fetchData(currentRange);
+        });
+
+        function showStatus(message, type = 'info') {
+            elStatusContainer.className = `p-3 mb-4 rounded text-xs font-medium border ${type === 'error' ? 'bg-red-50 text-red-800 border-red-200' : 'bg-blue-50 text-blue-800 border-blue-200'} block`;
+            elStatusContainer.textContent = message;
+        }
+
+        function hideStatus() {
+            elStatusContainer.className = 'hidden';
+            elStatusContainer.textContent = '';
+        }
+
+        function formatTime(date) {
+            return date.toLocaleTimeString('vi-VN', { hour12: false });
+        }
+
+        function updateCountdown() {
+            const now = Date.now();
+            const diff = nextRefreshTime - now;
+
+            if (diff <= 0) {
+                elCountdown.textContent = "Đang đồng bộ...";
+                return;
+            }
+
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            elCountdown.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function startCountdown() {
+            if (countdownTimer) clearInterval(countdownTimer);
+            nextRefreshTime = Date.now() + REFRESH_INTERVAL_MS;
+            updateCountdown();
+            countdownTimer = setInterval(updateCountdown, 1000);
+        }
+
+        function renderDashboard(data) {
+            const total = data.totalConversations || 0;
+            elHeaderTotal.textContent = total;
+            elKpiTotal.textContent = total;
+
+            if (data.rangeLabel) {
+                if (elHeaderRangeText) elHeaderRangeText.textContent = data.rangeLabel;
+                if (elActiveRangeBadge) elActiveRangeBadge.textContent = data.rangeLabel;
+                if (elKpiTotalDesc) elKpiTotalDesc.textContent = data.rangeLabel;
+            }
+
+            const stages = data.funnel || [];
+            const closingStage = stages[stages.length - 1];
+            const closingRate = closingStage ? closingStage.rate : 0;
+            const targetClosing = closingStage ? closingStage.target : 10;
+            
+            elKpiClosing.textContent = closingRate.toFixed(1) + '%';
+            
+            if (closingRate >= targetClosing) {
+                elKpiStatus.textContent = 'Đạt Mục Tiêu';
+                elKpiStatus.className = 'text-xl font-bold text-emerald-600';
+                elKpiStatusDesc.textContent = 'Tỷ lệ chốt đơn đã vượt mức 10%';
+            } else if (closingRate >= 6.0) {
+                elKpiStatus.textContent = 'Đang Cải Thiện Rõ Rệt';
+                elKpiStatus.className = 'text-xl font-bold text-blue-600';
+                elKpiStatusDesc.textContent = `Tăng từ 3.5% lên ${closingRate.toFixed(1)}% sau v1.1 - v1.3`;
+            } else {
+                elKpiStatus.textContent = 'Chưa Đạt Mục Tiêu';
+                elKpiStatus.className = 'text-xl font-bold text-red-600';
+                elKpiStatusDesc.textContent = `Cần đẩy mạnh tối ưu (hiện tại ${closingRate.toFixed(1)}%)`;
+            }
+
+            // Calculate biggest dropoff
+            let maxDrop = 0;
+            let maxDropName = 'Không có';
+            for (let i = 1; i < stages.length; i++) {
+                const drop = stages[i-1].rate - stages[i].rate;
+                if (drop > maxDrop) {
+                    maxDrop = drop;
+                    maxDropName = `B${stages[i-1].stage} → B${stages[i].stage}`;
+                }
+            }
+            elKpiDropoffName.textContent = maxDropName;
+            elKpiDropoffVal.textContent = `-${maxDrop.toFixed(1)}%`;
+
+            // 1. Render Funnel
+            elFunnelContainer.innerHTML = '';
+            stages.forEach((stage, index) => {
+                const widthPercent = funnelWidths[index] || '50%';
+                const diff = stage.rate - stage.target;
+                const isGood = diff >= 0;
+                const colorClass = isGood ? 'text-emerald-700' : 'text-red-600';
+                const sign = diff > 0 ? '+' : '';
+                const diffLabel = `${sign}${diff.toFixed(1)}%`;
+                const cNum = circleNums[index] || `(${stage.stage})`;
+
+                const rowHtml = `
+                    <div class="w-full flex justify-center">
+                        <div style="width: ${widthPercent};" class="relative">
+                            <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline mb-1.5 text-xs sm:text-sm">
+                                <span class="font-bold text-slate-800">${cNum} ${stage.name}</span>
+                                <span class="font-mono text-xs mt-0.5 sm:mt-0">
+                                    <span class="font-bold text-slate-900">${stage.count} hội thoại</span> 
+                                    <span class="text-slate-400">→</span> 
+                                    <span class="font-bold ${colorClass}">${stage.rate.toFixed(1)}%</span> 
+                                    <span class="text-slate-400">/ KPI: ${stage.target}% (${diffLabel})</span>
+                                </span>
+                            </div>
+                            <div class="h-9 bg-slate-100 rounded relative overflow-hidden border border-slate-200">
+                                <!-- Target Indicator Line -->
+                                <div class="absolute top-0 bottom-0 border-l-2 border-dashed border-slate-500 z-10" style="left: ${stage.target}%;" title="KPI Mục tiêu: ${stage.target}%"></div>
+                                <!-- Actual Value Bar -->
+                                <div class="absolute top-0 left-0 h-full bg-blue-600 bar-transition z-0" style="width: ${Math.min(100, stage.rate)}%;"></div>
+                                <!-- Inside Text Info -->
+                                <div class="absolute inset-0 flex items-center justify-between px-3 pointer-events-none z-20 text-xs font-semibold">
+                                    <span class="${stage.rate > 35 ? 'text-white' : 'text-slate-700'}">${stage.rate.toFixed(1)}%</span>
+                                    <span class="${stage.rate > 80 ? 'text-blue-100' : 'text-slate-600'}">${stage.count} khách</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                elFunnelContainer.insertAdjacentHTML('beforeend', rowHtml);
+            });
+
+            // 2. Render Detail Table
+            elTableBody.innerHTML = '';
+            stages.forEach((stage, index) => {
+                const diff = stage.rate - stage.target;
+                const isGood = diff >= 0;
+                const sign = diff > 0 ? '+' : '';
+                const diffStr = sign + diff.toFixed(1) + '%';
+                const statusText = isGood ? 'Đạt' : 'Chưa đạt';
+                const statusClass = isGood ? 'text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded text-xs font-bold' : 'text-red-700 bg-red-50 border border-red-200 px-2.5 py-0.5 rounded text-xs font-bold';
+                const valColorClass = isGood ? 'text-emerald-700 font-bold' : 'text-red-600 font-bold';
+                const cNum = circleNums[index] || stage.stage;
+
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-6 py-3 font-semibold text-slate-800">${cNum}</td>
+                    <td class="px-6 py-3 text-slate-700 font-medium">${stage.name}</td>
+                    <td class="px-6 py-3 text-right font-mono font-bold text-slate-900">${stage.count}</td>
+                    <td class="px-6 py-3 text-right font-mono ${valColorClass}">${stage.rate.toFixed(1)}%</td>
+                    <td class="px-6 py-3 text-right font-mono text-slate-500 font-medium">${stage.target}%</td>
+                    <td class="px-6 py-3 text-right font-mono text-xs ${valColorClass}">${diffStr}</td>
+                    <td class="px-6 py-3 text-center"><span class="${statusClass}">${statusText}</span></td>
+                `;
+                elTableBody.appendChild(tr);
+            });
+
+            // 3. Render Cycles Table
+            const cycles = data.cycles || [];
+            elCyclesTableBody.innerHTML = '';
+            cycles.forEach(c => {
+                const isPass = parseFloat(c.rate) >= 10.0;
+                const statusBadge = isPass 
+                    ? '<span class="text-emerald-700 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded text-xs font-bold">Đạt mục tiêu</span>'
+                    : (c.isCurrent ? '<span class="text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded text-xs font-bold">Đang cải thiện</span>' : '<span class="text-red-700 bg-red-50 border border-red-200 px-2.5 py-0.5 rounded text-xs font-bold">Chưa đạt</span>');
+
+                const tr = document.createElement('tr');
+                tr.className = c.isCurrent ? "bg-blue-50/50 hover:bg-blue-50 transition-colors" : "hover:bg-slate-50 transition-colors";
+                tr.innerHTML = `
+                    <td class="px-6 py-3 font-bold text-slate-900">${c.cycle} ${c.isCurrent ? '<span class="text-xs font-normal text-blue-600">(Hiện tại)</span>' : ''}</td>
+                    <td class="px-6 py-3 text-slate-600">${c.time}</td>
+                    <td class="px-6 py-3 text-right font-mono font-bold text-slate-800">${c.convos}</td>
+                    <td class="px-6 py-3 text-right font-mono font-bold text-slate-900">${c.orders}</td>
+                    <td class="px-6 py-3 text-right font-mono font-bold text-blue-700 text-sm">${c.rate}</td>
+                    <td class="px-6 py-3 text-right font-mono text-slate-500">${c.target}</td>
+                    <td class="px-6 py-3 text-center">${statusBadge}</td>
+                `;
+                elCyclesTableBody.appendChild(tr);
+            });
+
+            // 4. Render Confirmed Orders
+            const orders = data.confirmedOrders || [];
+            elOrdersCountBadge.textContent = `${orders.length} Đơn hàng`;
+            elOrdersContainer.innerHTML = '';
+            if (orders.length === 0) {
+                elOrdersContainer.innerHTML = '<div class="col-span-2 text-center text-slate-400 py-4 text-xs">Chưa có đơn hàng nào được xác nhận hôm nay</div>';
+            } else {
+                orders.forEach(o => {
+                    const orderCard = `
+                        <div class="border border-slate-200 rounded p-3.5 bg-slate-50 flex justify-between items-start">
+                            <div>
+                                <div class="font-bold text-slate-900 text-sm">${o.name}</div>
+                                <div class="text-xs text-slate-500 font-mono mt-0.5">TID: ${o.tid}</div>
+                                <div class="mt-2 inline-block px-2 py-0.5 bg-emerald-100 text-emerald-800 text-xs font-semibold rounded">
+                                    ${o.status}
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="text-xs text-slate-400 font-mono">${o.time ? new Date(o.time).toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'}) : ''}</span>
+                            </div>
+                        </div>
+                    `;
+                    elOrdersContainer.insertAdjacentHTML('beforeend', orderCard);
+                });
+            }
+
+            // 5. Render Changelog
+            const changelog = data.changelog || [];
+            elChangelogContent.innerHTML = '';
+            changelog.forEach(cl => {
+                const clHtml = `
+                    <div class="border-l-2 border-blue-600 pl-4 py-2 bg-slate-50/50 rounded-r">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-baseline">
+                            <div class="flex items-center space-x-2">
+                                <span class="font-extrabold text-blue-700">${cl.version}</span>
+                                <span class="font-bold text-slate-800 text-sm">— ${cl.title}</span>
+                            </div>
+                            <span class="text-xs text-slate-400 font-mono mt-1 sm:mt-0">${cl.date} | ${cl.author || ''}</span>
+                        </div>
+                        ${cl.problem ? `<div class="text-xs text-red-600 mt-1 font-medium">Nguyên nhân / Vấn đề: ${cl.problem}</div>` : ''}
+                        <ul class="mt-2 space-y-1 text-xs text-slate-600">
+                            ${(cl.items || []).map(item => `<li class="flex items-start"><span class="mr-1.5 text-blue-600 font-bold">•</span><span>${item}</span></li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+                elChangelogContent.insertAdjacentHTML('beforeend', clHtml);
+            });
+
+            // 6. Render Backlog
+            const backlog = data.backlog || [];
+            elBacklogContainer.innerHTML = '';
+            backlog.forEach(b => {
+                const bHtml = `
+                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center p-3 border border-slate-200 rounded hover:bg-slate-50 transition-colors text-xs">
+                        <div class="flex items-center space-x-2.5">
+                            <span class="font-mono font-bold px-2 py-0.5 bg-slate-200 text-slate-700 rounded">${b.id}</span>
+                            <span class="font-medium text-slate-800">${b.task}</span>
+                        </div>
+                        <div class="flex items-center space-x-2 mt-2 sm:mt-0">
+                            <span class="text-slate-500">${b.impact}</span>
+                            <span class="px-2 py-0.5 font-semibold rounded ${b.status.includes('Đã') ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">${b.status}</span>
+                        </div>
+                    </div>
+                `;
+                elBacklogContainer.insertAdjacentHTML('beforeend', bHtml);
+            });
+
+            elLastUpdated.textContent = formatTime(new Date());
+        }
+
+        async function fetchData(range = currentRange) {
+            try {
+                showStatus(`Đang tải dữ liệu (${range})...`, 'info');
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 40000);
+                
+                const response = await fetch(`/api/funnel-data?range=${encodeURIComponent(range)}`, { signal: controller.signal });
+                clearTimeout(timeoutId);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                hideStatus();
+                renderDashboard(data);
+            } catch (error) {
+                console.warn('API fetch failed, falling back to mock data.', error);
+                showStatus('Không thể đồng bộ thời gian thực từ Smax. Đang hiển thị bản lưu mới nhất.', 'error');
+                renderDashboard(fallbackData);
+            } finally {
+                startCountdown();
+            }
+        }
+
+        // Initialize on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData(currentRange);
+            setInterval(() => fetchData(currentRange), REFRESH_INTERVAL_MS);
+        });
+    </script>
+</body>
+</html>

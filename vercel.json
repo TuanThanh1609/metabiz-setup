@@ -1,5 +1,29 @@
 {
   "version": 2,
   "outputDirectory": "src",
-  "cleanUrls": true
+  "cleanUrls": true,
+  "functions": {
+    "api/sync.js": { "maxDuration": 60 },
+    "api/ai-analyze.js": { "maxDuration": 60 },
+    "api/leads.js": { "maxDuration": 30 },
+    "api/botapi-tagger.js": { "maxDuration": 30 },
+    "api/ads-webhook.js": { "maxDuration": 30 },
+    "api/ads.js": { "maxDuration": 30 }
+  },
+  "crons": [
+    {
+      "path": "/api/sync?project_id=fitgum",
+      "schedule": "0 0 * * *"
+    }
+  ],
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api/$1" },
+    { "source": "/assets/(.*)", "destination": "/assets/$1" },
+    { "source": "/css/(.*)", "destination": "/css/$1" },
+    { "source": "/js/(.*)", "destination": "/js/$1" },
+    { "source": "/crm/(.*)", "destination": "/crm" },
+    { "source": "/fitgum", "destination": "/crm" },
+    { "source": "/abera", "destination": "/crm" },
+    { "source": "/:project", "destination": "/crm" }
+  ]
 }

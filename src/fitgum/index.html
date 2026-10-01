@@ -1,0 +1,2072 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WhatsApp Mini CRM - Live Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23059669'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-family='Arial,sans-serif' font-size='36' font-weight='700' fill='white'%3EC%3C/text%3E%3C/svg%3E">
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Google Fonts: Roboto -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400;1,500&display=swap" rel="stylesheet">
+  <style>
+    * { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
+    ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    .nav-active {
+      background-color: #0f172a !important;
+      color: #ffffff !important;
+    }
+    .nav-active svg {
+      color: #10b981 !important;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased min-h-screen flex flex-col">
+
+  <!-- TOP HEADER -->
+  <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md border-b border-slate-800">
+    <div class="w-full px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <!-- Mobile Sidebar Toggle -->
+        <button onclick="toggleMobileSidebar()" class="md:hidden p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-slate-800">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-extrabold text-white text-xl shadow-lg shadow-emerald-500/20" id="projectLogo">
+          C
+        </div>
+        <div>
+          <div class="flex items-center space-x-2">
+            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-1.5" id="projectHeading">
+              <span id="projectTitle">Mini CRM</span>
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" id="projectBadge">
+                🇲🇾 Livechat CRM
+              </span>
+            </h1>
+          </div>
+          <p class="text-xs text-slate-400 flex items-center gap-1.5 flex-wrap">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Realtime DB: <span class="font-medium text-slate-300">Neon Postgres</span>
+            <span class="text-slate-600">•</span>
+            <span class="text-slate-400" id="projectSlugText">Project: fitgum</span>
+            <span class="text-slate-600">•</span>
+            <span id="syncStatusBadge" class="text-emerald-400 font-medium cursor-pointer hover:underline flex items-center gap-1" onclick="manualSync()" title="Bấm để đồng bộ tin nhắn ngay từ Smax">
+              <span>🔄</span> <span>Smax Auto: 15p</span>
+            </span>
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <button id="btnTriggerBotApi" onclick="runBotApiTagging()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white shadow-sm transition" title="Kích hoạt Smax BotAPI gắn tag">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+          <span class="hidden sm:inline">BotAPI Tag</span>
+        </button>
+        <button id="btnRefresh" onclick="manualSync()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition" title="Đồng bộ tin nhắn mới từ Smax và cập nhật bảng">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+          <span class="hidden sm:inline">Làm mới &amp; Đồng bộ</span>
+        </button>
+        <button onclick="exportToCSV()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <span class="hidden sm:inline">Xuất Excel</span>
+        </button>
+        <button onclick="logoutPin()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition" title="Đổi mã PIN">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MOBILE NAVIGATION BAR -->
+  <div class="md:hidden bg-slate-900 border-b border-slate-800 px-2 py-1.5 flex items-center justify-around text-xs sticky top-16 z-20">
+    <button onclick="switchView('overview')" class="mob-nav-btn px-3 py-1.5 rounded-lg font-medium text-slate-300 hover:text-white transition flex items-center gap-1" data-view="overview">
+      <span>📊</span> <span>Tổng quan</span>
+    </button>
+    <button onclick="switchView('funnel')" class="mob-nav-btn px-3 py-1.5 rounded-lg font-medium text-slate-300 hover:text-white transition flex items-center gap-1" data-view="funnel">
+      <span>🔄</span> <span>Phễu chuyển đổi</span>
+    </button>
+    <button onclick="switchView('ads')" class="mob-nav-btn px-3 py-1.5 rounded-lg font-medium text-slate-300 hover:text-white transition flex items-center gap-1" data-view="ads">
+      <span>🎯</span> <span>Ads Campaign</span>
+    </button>
+  </div>
+
+  <!-- MAIN APP WRAPPER (SIDEBAR + CONTENT) -->
+  <div class="flex-1 flex w-full">
+    
+    <!-- LEFT SIDEBAR (DESKTOP) -->
+    <aside class="w-64 flex-shrink-0 bg-white border-r border-slate-200 hidden md:flex flex-col py-6 px-3 justify-between">
+      <div class="space-y-6">
+        <!-- Project Identity Mini Box -->
+        <div class="px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-100">
+          <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Dự Án Đang Xem</div>
+          <div class="font-bold text-slate-800 text-sm truncate mt-0.5" id="sidebarProjectName">Fitgum Acai Berry</div>
+          <div class="text-[11px] text-emerald-600 font-medium flex items-center gap-1 mt-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Live Smax Sync
+          </div>
+        </div>
+
+        <!-- Navigation Menu -->
+        <div class="space-y-1">
+          <div class="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">Menu Báo Cáo</div>
+          
+          <button onclick="switchView('overview')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100" data-view="overview">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
+            <span>Tổng Quan</span>
+          </button>
+
+          <button onclick="switchView('funnel')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100" data-view="funnel">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <span>Phễu Chuyển Đổi</span>
+            <span class="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-indigo-50 text-indigo-600">7 Bước</span>
+          </button>
+
+          <button onclick="switchView('ads')" class="nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100" data-view="ads">
+            <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path></svg>
+            <span>Báo Cáo Ads Campaign</span>
+            <span class="ml-auto text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-emerald-50 text-emerald-700" id="sidebarAdsBadge">Ad_ID</span>
+          </button>
+        </div>
+
+        <!-- Quick Summary Box -->
+        <div class="px-3 py-3 rounded-xl bg-indigo-50/60 border border-indigo-100 text-xs space-y-2">
+          <div class="font-bold text-indigo-900 flex items-center gap-1.5">
+            <span>⚡</span> Điểm Nghẽn AI Phát Hiện
+          </div>
+          <p class="text-indigo-800 text-[11px] leading-relaxed" id="sidebarBottleneckBrief">
+            Đang phân tích 7 bước phễu...
+          </p>
+          <button onclick="switchView('funnel')" class="text-[11px] font-semibold text-indigo-700 hover:underline flex items-center gap-1">
+            Xem chẩn đoán chi tiết &rarr;
+          </button>
+        </div>
+      </div>
+
+      <!-- Sidebar Footer -->
+      <div class="px-3 pt-4 border-t border-slate-100 text-[11px] text-slate-400">
+        <div>Mini-CRM v2.4 Enterprise</div>
+        <div class="mt-0.5 font-mono">Neon + Vercel + Smax</div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 min-w-0 px-3 sm:px-6 lg:px-8 py-6 space-y-6">
+
+      <!-- ========================================== -->
+      <!-- VIEW 1: TỔNG QUAN (OVERVIEW)               -->
+      <!-- ========================================== -->
+      <div id="viewOverview" class="space-y-6">
+
+        <!-- KPI CARDS GRID -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+          <!-- Card 1: Closed Orders -->
+          <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-emerald-100 hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-emerald-700">Đơn Chốt Thành Công</span>
+              <div class="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-sm">📦</div>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="kpiClosedOrders" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
+              <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">COD Đã Chốt</span>
+            </div>
+            <div class="mt-2 text-xs text-slate-500 flex items-center justify-between">
+              <span>Doanh thu:</span>
+              <span id="kpiRevenue" class="font-bold text-slate-800">0.00</span>
+            </div>
+          </div>
+
+          <!-- Card 2: Hot Leads -->
+          <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-amber-100 hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-amber-700">Có Nhu Cầu Cao</span>
+              <div class="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">🔥</div>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="kpiHotLeads" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
+              <span id="kpiHotRate" class="text-xs font-semibold text-amber-700 bg-amber-50 px-2 py-0.5 rounded-full">0%</span>
+            </div>
+            <div class="mt-2 text-xs text-slate-500">Khách gửi &gt;= 3 tin, quan tâm combo</div>
+          </div>
+
+          <!-- Card 3: In Consultation -->
+          <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-blue-100 hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-blue-700">Đang Tư Vấn</span>
+              <div class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-sm">💬</div>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="kpiConsulting" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
+              <span class="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-full">Follow-up</span>
+            </div>
+            <div class="mt-2 text-xs text-slate-500">Đã hỏi giá hoặc mục tiêu vóc dáng</div>
+          </div>
+
+          <!-- Card 4: Total Leads -->
+          <div class="bg-white rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200 hover:shadow-md transition">
+            <div class="flex items-center justify-between mb-2">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-600">Tổng Leads WhatsApp</span>
+              <div class="w-8 h-8 rounded-lg bg-slate-100 text-slate-600 flex items-center justify-center font-bold text-sm">👥</div>
+            </div>
+            <div class="flex items-baseline gap-2">
+              <span id="kpiTotalLeads" class="text-2xl sm:text-3xl font-extrabold text-slate-900">0</span>
+              <span class="text-xs font-semibold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">100% Smax</span>
+            </div>
+            <div class="mt-2 text-xs text-slate-500">
+              Chưa phản hồi: <span id="kpiNoResponse" class="font-medium text-slate-700">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- LINE CHART: DAILY PERFORMANCE (MỐC: LẦN ĐẦU NHẮN TIN) -->
+        <div class="bg-white rounded-2xl p-4 sm:p-6 shadow-sm border border-slate-200">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-100">
+            <div>
+              <h2 class="text-sm sm:text-base font-bold text-slate-900 flex items-center gap-2">
+                <span>📈</span> Biểu Đồ Hiệu Suất Theo Ngày
+                <span class="text-xs font-normal text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">Mốc: Lần đầu nhắn tin</span>
+              </h2>
+              <p class="text-xs text-slate-500 mt-0.5">Biến động số lượng lead, phân loại tư vấn và đơn chốt thành công qua từng ngày</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-3 text-xs">
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-indigo-500 inline-block"></span> Tổng số lead</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-sky-500 inline-block"></span> Đang tư vấn</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-amber-500 inline-block"></span> Có nhu cầu</span>
+              <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-full bg-emerald-500 inline-block"></span> Đã chốt đơn</span>
+            </div>
+          </div>
+          <div class="relative w-full h-64 sm:h-72">
+            <canvas id="dailyPerformanceChart"></canvas>
+          </div>
+        </div>
+
+        <!-- CONTROLS & FILTER BAR -->
+        <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <!-- Status Tabs -->
+          <div class="flex items-center space-x-1 overflow-x-auto pb-1 lg:pb-0 scrollbar-none" id="statusTabs">
+            <button onclick="setStatusFilter('all')" class="status-tab px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-900 text-white" data-status="all">
+              Tất cả (<span id="tabCountAll">0</span>)
+            </button>
+            <button onclick="setStatusFilter('Đã chốt đơn')" class="status-tab px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-slate-600 hover:bg-slate-100 transition" data-status="Đã chốt đơn">
+              ✅ Đã chốt đơn (<span id="tabCountClosed">0</span>)
+            </button>
+            <button onclick="setStatusFilter('Có nhu cầu')" class="status-tab px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-slate-600 hover:bg-slate-100 transition" data-status="Có nhu cầu">
+              🔥 Có nhu cầu (<span id="tabCountHot">0</span>)
+            </button>
+            <button onclick="setStatusFilter('Đang tư vấn')" class="status-tab px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-slate-600 hover:bg-slate-100 transition" data-status="Đang tư vấn">
+              💬 Đang tư vấn (<span id="tabCountConsulting">0</span>)
+            </button>
+            <button onclick="setStatusFilter('Chưa phản hồi')" class="status-tab px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-slate-600 hover:bg-slate-100 transition" data-status="Chưa phản hồi">
+              ⏳ Chưa phản hồi (<span id="tabCountNoResponse">0</span>)
+            </button>
+          </div>
+
+          <!-- Secondary Filters & Search -->
+          <div class="flex flex-col sm:flex-row items-center gap-3">
+            <!-- Sort Selector -->
+            <div class="flex items-center gap-2 w-full sm:w-auto">
+              <span class="text-xs text-slate-500 font-medium whitespace-nowrap">Sắp xếp:</span>
+              <select id="sortSelect" onchange="handleSortSelectChange(this.value)" class="w-full sm:w-auto bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-semibold text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="last_msg_desc" selected>🕒 Lần cuối nhắn (Mới nhất)</option>
+                <option value="last_msg_asc">🕒 Lần cuối nhắn (Cũ nhất)</option>
+                <option value="first_msg_desc">⏳ Lần đầu nhắn (Mới nhất)</option>
+                <option value="first_msg_asc">⏳ Lần đầu nhắn (Cũ nhất)</option>
+              </select>
+            </div>
+
+            <!-- Active Ad_ID / Funnel Step Filter Pills (if any) -->
+            <div id="activeFilterPills" class="flex items-center gap-1.5 flex-wrap"></div>
+
+            <!-- Search Input -->
+            <div class="relative w-full sm:w-72">
+              <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Tìm tên, SĐT, combo, Ad_ID..." class="w-full pl-9 pr-4 py-2 text-xs sm:text-sm rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-slate-50 focus:bg-white">
+              <svg class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- LEADS TABLE (DESKTOP) / CARDS (MOBILE) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <!-- Loading State -->
+          <div id="loadingState" class="py-20 text-center">
+            <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-slate-200 border-t-emerald-600 mb-3"></div>
+            <p class="text-sm text-slate-500 font-medium">Đang tải dữ liệu từ Neon Serverless Postgres...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div id="emptyState" class="hidden py-16 text-center">
+            <div class="w-12 h-12 rounded-full bg-slate-100 text-slate-400 flex items-center justify-center mx-auto mb-3 text-xl">🔍</div>
+            <p class="text-sm font-semibold text-slate-700">Không tìm thấy hội thoại nào</p>
+            <p class="text-xs text-slate-400 mt-1">Thử đổi từ khóa tìm kiếm hoặc bấm tab "Tất cả".</p>
+          </div>
+
+          <!-- Desktop Table -->
+          <div class="hidden md:block overflow-x-auto">
+            <table class="w-full text-left text-xs sm:text-sm">
+              <thead class="bg-slate-50/80 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-4">Khách Hàng &amp; SĐT</th>
+                  <th class="py-3 px-3">Mã Ad (Ad_ID)</th>
+                  <th class="py-3 px-3">Phễu 7 Bước</th>
+                  <th class="py-3 px-3">Trạng Thái</th>
+                  <th class="py-3 px-4">Nhu Cầu Chính</th>
+                  <th class="py-3 px-4">Đơn Hàng / Báo Giá</th>
+                  <th class="py-3 px-3 cursor-pointer hover:bg-slate-100 transition select-none" onclick="toggleHeaderSort('first_msg')" title="Bấm để đảo chiều sắp xếp">
+                    <span class="flex items-center gap-1">Lần Đầu <span id="sortIconFirst">↕️</span></span>
+                  </th>
+                  <th class="py-3 px-3 cursor-pointer hover:bg-slate-100 transition select-none" onclick="toggleHeaderSort('last_msg')" title="Bấm để đảo chiều sắp xếp">
+                    <span class="flex items-center gap-1">Lần Cuối <span id="sortIconLast">🔽</span></span>
+                  </th>
+                  <th class="py-3 px-4 text-right">Chi Tiết</th>
+                </tr>
+              </thead>
+              <tbody id="leadsTableBody" class="divide-y divide-slate-100">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Mobile Cards List -->
+          <div id="leadsMobileList" class="md:hidden divide-y divide-slate-100">
+            <!-- Rendered by JS -->
+          </div>
+
+          <!-- Pagination Controls Bar -->
+          <div id="paginationBar" class="p-3.5 bg-slate-50 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-600">
+            <div class="flex items-center gap-2">
+              <span>Hiển thị:</span>
+              <select id="pageSizeSelect" onchange="changePageSize(Number(this.value))" class="bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-semibold text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
+                <option value="20" selected>20 hội thoại</option>
+                <option value="50">50 hội thoại</option>
+                <option value="100">100 hội thoại</option>
+              </select>
+              <span class="text-slate-400">|</span>
+              <span id="paginationInfo" class="font-medium text-slate-700">Hiển thị 1 - 20 trong tổng số 0</span>
+            </div>
+
+            <div class="flex items-center space-x-1" id="paginationButtons">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- VIEW 2: PHỄU CHUYỂN ĐỔI (FUNNEL VIEW)      -->
+      <!-- ========================================== -->
+      <div id="viewFunnel" class="hidden space-y-6">
+
+        <!-- Funnel Header & Objective -->
+        <div class="bg-gradient-to-r from-slate-900 to-indigo-950 rounded-2xl p-6 text-white shadow-md">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
+                  Chuẩn WhatsApp Funnel Engine
+                </span>
+                <span class="text-xs text-slate-400">7-Step Architecture</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-black mt-2 text-white flex items-center gap-2">
+                <span>🔄</span> Phễu Chuyển Đổi &amp; Chẩn Đoán Điểm Nghẽn
+              </h2>
+              <p class="text-xs sm:text-sm text-slate-300 mt-1 max-w-2xl">
+                Phân tích toàn diện hành vi khách hàng qua 7 giai đoạn tư vấn AI. Phát hiện chính xác vị trí khách hàng bị rơi rụng (drop-off) và tự động đưa ra giải pháp kịch bản tối ưu.
+              </p>
+            </div>
+            <div class="text-right flex-shrink-0 bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/15">
+              <div class="text-[11px] text-slate-300">Tỷ lệ chốt đơn toàn phễu</div>
+              <div class="text-2xl font-black text-emerald-400" id="funnelClosingRateOverall">0.9%</div>
+              <div class="text-[10px] text-slate-400 mt-0.5">Mục tiêu chuẩn: &gt; 10%</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTTLENECK DIAGNOSTIC ALERT BOX -->
+        <div class="bg-amber-50 border-2 border-amber-300/80 rounded-2xl p-5 shadow-sm">
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg flex-shrink-0 shadow-md shadow-amber-500/20">
+              ⚠️
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center justify-between flex-wrap gap-2">
+                <h3 class="font-extrabold text-amber-950 text-base" id="funnelBottleneckTitle">
+                  Điểm Nghẽn Lớn Nhất: Step 4: Báo Giá &amp; Combo (54.6% Khách Hàng)
+                </h3>
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-200 text-amber-900">
+                  Cần Tối Ưu Khẩn Cấp
+                </span>
+              </div>
+              <p class="text-xs sm:text-sm text-amber-900 mt-1.5 leading-relaxed" id="funnelBottleneckDesc">
+                Có tới <strong>59 leads</strong> (54.6%) và <strong>22 leads</strong> (20.4%) đang dừng lại ở khâu xem bảng giá và xử lý từ chối. Khách hỏi giá xong rồi im lặng vì chưa đủ bằng chứng giảm cân thực tế hoặc cảm thấy giá cao.
+              </p>
+              <div class="mt-3 pt-3 border-t border-amber-200/80 grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                <div class="bg-white/80 rounded-xl p-3 border border-amber-200">
+                  <div class="font-bold text-slate-800 flex items-center gap-1.5 mb-1 text-emerald-700">
+                    <span>💡</span> Giải Pháp 1: Bổ Sung Step 3 (Social Proof)
+                  </div>
+                  <p class="text-slate-600">
+                    Gửi ngay ảnh chứng thực review khách hàng đã dùng thành công TRƯỚC KHI gửi giá. Giới hạn tin nhắn báo giá dưới 80 từ theo quy tắc WhatsApp Funnel.
+                  </p>
+                </div>
+                <div class="bg-white/80 rounded-xl p-3 border border-amber-200">
+                  <div class="font-bold text-slate-800 flex items-center gap-1.5 mb-1 text-blue-700">
+                    <span>🛡️</span> Giải Pháp 2: Đòn Bẩy "3 Cam Kết Vàng COD"
+                  </div>
+                  <p class="text-slate-600">
+                    Khi khách chê đắt hoặc im lặng, kích hoạt ngay xử lý từ chối: chia nhỏ chỉ 6 RM/ngày + cam kết kiểm tra hàng thoải mái mới thanh toán.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 7-STEP INTERACTIVE FUNNEL VISUALIZER -->
+        <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200 space-y-4">
+          <div class="flex items-center justify-between pb-3 border-b border-slate-100">
+            <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+              <span>📊</span> Phân Bổ 7 Bước Phễu Bán Hàng Chi Tiết
+            </h3>
+            <span class="text-xs text-slate-400">Bấm vào từng bước để lọc danh sách khách hàng</span>
+          </div>
+
+          <!-- Funnel Steps List -->
+          <div class="space-y-3" id="funnelStepsContainer">
+            <!-- Dynamically generated 7 steps -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ========================================== -->
+      <!-- VIEW 3: BÁO CÁO THEO ADS CAMPAIGN (ADS)    -->
+      <!-- ========================================== -->
+      <div id="viewAds" class="hidden space-y-6">
+
+        <!-- Ads Header & Smax API Connector Setup Helper -->
+        <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200">
+          <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+            <div>
+              <div class="flex items-center gap-2">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                  Meta Click-to-WhatsApp Attribution &amp; Spend Engine
+                </span>
+                <span class="text-xs text-slate-400">CTWA Referral Ads &amp; ROAS Analytics</span>
+              </div>
+              <h2 class="text-xl sm:text-2xl font-black mt-2 text-slate-900 flex items-center gap-2">
+                <span>🎯</span> Báo Cáo Hiệu Quả &amp; ROAS Theo Ads Campaign
+              </h2>
+              <p class="text-xs sm:text-sm text-slate-500 mt-1">
+                Đo lường chi phí (Spend), tỷ lệ chuyển đổi (ROAS, CPA, CPL), và chất lượng leads WhatsApp theo từng mã quảng cáo.
+              </p>
+            </div>
+
+            <!-- Smax Connector Webhook Quick Box -->
+            <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3.5 border border-emerald-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div>
+                <div class="font-bold text-emerald-900 flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                  <span>URL Hứng Dữ Liệu Quảng Cáo Smax (API Connector):</span>
+                </div>
+                <div class="font-mono text-[11px] text-emerald-800 bg-white/80 px-2 py-1 rounded border border-emerald-200 mt-1 select-all" id="adsWebhookUrlDisplay">
+                  https://metabizai-smax.vercel.app/api/ads-webhook?project_id=fitgum
+                </div>
+              </div>
+              <button onclick="copyAdsWebhookUrl()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition flex items-center gap-1.5 shadow-sm whitespace-nowrap">
+                <span>📋</span> <span>Copy URL Smax</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 EXECUTIVE ADS KPI CARDS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Card 1: Total Spend -->
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Tổng Chi Phí Ads</span>
+              <span class="p-2 rounded-xl bg-purple-50 text-purple-700 text-base">💳</span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900" id="adsKpiSpend">0</span>
+              <span class="text-xs font-semibold text-slate-500" id="adsKpiSpendCurrency">RM</span>
+            </div>
+            <div class="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5 flex-wrap">
+              <span id="adsKpiImpressions">0</span> views • <span id="adsKpiClicks">0</span> clicks • CTR: <strong class="text-purple-700 font-bold" id="adsKpiCtr">0%</strong>
+            </div>
+          </div>
+
+          <!-- Card 2: Ad Revenue & Blended ROAS -->
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-emerald-200 relative overflow-hidden bg-gradient-to-br from-white to-emerald-50/30">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-emerald-800">Doanh Thu &amp; ROAS</span>
+              <span class="px-2 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300" id="adsKpiRoasBadge">ROAS 0.00x</span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-2xl sm:text-3xl font-extrabold text-emerald-700" id="adsKpiRevenue">0</span>
+              <span class="text-xs font-semibold text-emerald-600" id="adsKpiRevCurrency">RM</span>
+            </div>
+            <div class="mt-2 text-[11px] text-emerald-700 font-medium">
+              Từ các đơn COD chốt thành công qua quảng cáo
+            </div>
+          </div>
+
+          <!-- Card 3: Blended CPA -->
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Chi Phí / Đơn Hàng (CPA)</span>
+              <span class="p-2 rounded-xl bg-amber-50 text-amber-700 text-base">🎯</span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900" id="adsKpiCpa">0</span>
+              <span class="text-xs font-semibold text-slate-500" id="adsKpiCpaCurrency">RM / đơn</span>
+            </div>
+            <div class="mt-2 text-[11px] text-slate-500">
+              <strong class="text-slate-800" id="adsKpiOrders">0</strong> đơn hàng COD đã hoàn tất
+            </div>
+          </div>
+
+          <!-- Card 4: Cost per Lead & CPC -->
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 relative overflow-hidden">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-semibold uppercase tracking-wider text-slate-500">Chi Phí / Lead (CPL)</span>
+              <span class="p-2 rounded-xl bg-blue-50 text-blue-700 text-base">👥</span>
+            </div>
+            <div class="mt-2 flex items-baseline gap-2">
+              <span class="text-2xl sm:text-3xl font-extrabold text-slate-900" id="adsKpiCpl">0</span>
+              <span class="text-xs font-semibold text-slate-500" id="adsKpiCplCurrency">RM / lead</span>
+            </div>
+            <div class="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5 flex-wrap">
+              CPC: <strong class="text-slate-700" id="adsKpiCpc">RM 0</strong> • CPM: <strong class="text-slate-700" id="adsKpiCpm">RM 0</strong>
+            </div>
+          </div>
+        </div>
+
+        <!-- AI ADS INTELLIGENCE & INSIGHTS BANNER -->
+        <div id="adsIntelligenceBanner" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div class="flex items-start gap-3">
+            <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl shrink-0 font-bold">
+              💡
+            </div>
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                <span>Khuyến Nghị Tối Ưu Quảng Cáo &amp; Kịch Bản Phễu</span>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">AI Analysis</span>
+              </h4>
+              <p class="text-xs sm:text-sm text-slate-600 mt-1" id="adsRecommendationText">
+                Đang phân tích dữ liệu quảng cáo...
+              </p>
+            </div>
+          </div>
+          <div class="flex items-center gap-2 shrink-0">
+            <button onclick="filterByAdId('52644349828422')" id="btnFilterTopAd" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-200">
+              Xem Top Ad Chốt Đơn &rarr;
+            </button>
+          </div>
+        </div>
+
+        <!-- ADS TABLE -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div class="p-4 bg-slate-50/80 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 class="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-2">
+                <span>📋</span> Bảng Hiệu Quả Từng Mã Ad_ID &amp; Chiến Dịch
+              </h3>
+              <p class="text-[11px] text-slate-500 mt-0.5">So sánh chi phí quảng cáo thực tế từ Meta với số đơn và doanh thu thu về</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <input type="text" id="adsSearchInput" oninput="renderAdsTableFiltered()" placeholder="Tìm theo tên Ad, Campaign, Ad_ID..." class="px-3 py-1.5 text-xs rounded-xl border border-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 w-48 sm:w-64" />
+            </div>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs sm:text-sm">
+              <thead class="bg-slate-50 text-slate-500 text-[11px] font-bold uppercase tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="py-3 px-4">Mã &amp; Tên Quảng Cáo</th>
+                  <th class="py-3 px-3">Chiến Dịch &amp; Nhóm</th>
+                  <th class="py-3 px-3 text-right">Chi Phí (Spend)</th>
+                  <th class="py-3 px-3 text-center">Hiển Thị / Click</th>
+                  <th class="py-3 px-3 text-center">Khách WhatsApp</th>
+                  <th class="py-3 px-3 text-center">% Nhu Cầu</th>
+                  <th class="py-3 px-3 text-center">Đơn Chốt (COD)</th>
+                  <th class="py-3 px-3 text-right">Doanh Thu</th>
+                  <th class="py-3 px-3 text-right">CPA (RM/đơn)</th>
+                  <th class="py-3 px-3 text-right">CPL (RM/lead)</th>
+                  <th class="py-3 px-3 text-center">ROAS</th>
+                  <th class="py-3 px-3">Đánh Giá</th>
+                  <th class="py-3 px-4 text-right">Hành Động</th>
+                </tr>
+              </thead>
+              <tbody id="adsTableBody" class="divide-y divide-slate-100">
+                <!-- Rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 2 CHARTS: SPEND VS REVENUE + LEADS DISTRIBUTION -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Chart 1: Spend vs Revenue -->
+          <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <div>
+                <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                  <span>💰</span> So Sánh Chi Phí vs Doanh Thu (Spend vs Revenue)
+                </h3>
+                <p class="text-xs text-slate-500">Hiệu quả sinh lời của các mã quảng cáo Meta Ads</p>
+              </div>
+            </div>
+            <div class="relative w-full h-64 sm:h-72">
+              <canvas id="adsFinanceChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: Leads & Hot Intent Distribution -->
+          <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200">
+            <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-100">
+              <div>
+                <h3 class="font-bold text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                  <span>📊</span> Số Lượng Leads &amp; Tỷ Lệ Có Nhu Cầu
+                </h3>
+                <p class="text-xs text-slate-500">Quy mô tiếp cận và tỷ lệ quan tâm cao của từng mã quảng cáo</p>
+              </div>
+            </div>
+            <div class="relative w-full h-64 sm:h-72">
+              <canvas id="adsPerformanceChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+
+  <!-- CHAT DRAWER (SLIDE-OVER MODAL) -->
+  <div id="chatDrawer" class="fixed inset-0 z-50 overflow-hidden hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+    <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeChatDrawer()"></div>
+
+    <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
+      <div class="w-screen max-w-md sm:max-w-lg bg-white shadow-2xl flex flex-col">
+        <!-- Drawer Header -->
+        <div class="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-sm border border-emerald-500/30" id="drawerAvatar">
+              KH
+            </div>
+            <div>
+              <h3 class="text-sm font-bold text-white flex items-center gap-1.5" id="drawerTitle">
+                Customer Name
+              </h3>
+              <p class="text-xs text-slate-400 font-mono" id="drawerPhone">+60 xxxx xxxx</p>
+            </div>
+          </div>
+          <button onclick="closeChatDrawer()" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+          </button>
+        </div>
+
+        <!-- Drawer Content Container: Shows Full Order Card if 'Đã chốt đơn', else Standard Info -->
+        <div id="drawerLeadInfoContainer">
+          <!-- Funnel Step Indicator inside Drawer -->
+          <div class="px-4 py-2 bg-slate-100 border-b border-slate-200 text-xs flex items-center justify-between">
+            <span class="text-slate-500 font-medium">Giai đoạn Phễu:</span>
+            <span id="drawerFunnelStepBadge" class="font-bold px-2.5 py-0.5 rounded-full text-[11px] bg-indigo-50 text-indigo-700 border border-indigo-200"></span>
+          </div>
+
+          <!-- 1. Standard Info Box (for Non-closed leads) -->
+          <div id="drawerStandardBox" class="p-4 bg-slate-50 border-b border-slate-200 text-xs space-y-1.5">
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500">Mã Ad:</span>
+              <span id="drawerAdId" class="font-mono text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200"></span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-slate-500">Trạng thái:</span>
+              <span id="drawerStatusBadge" class="font-bold px-2 py-0.5 rounded text-[11px]"></span>
+            </div>
+            <div class="flex items-start justify-between">
+              <span class="text-slate-500">Nhu cầu chính:</span>
+              <span id="drawerIntent" class="text-slate-700 text-right font-medium"></span>
+            </div>
+            <div class="flex items-start justify-between">
+              <span class="text-slate-500">Điểm nghẽn / Ghi chú:</span>
+              <span id="drawerDropoff" class="text-slate-600 text-right font-medium"></span>
+            </div>
+          </div>
+
+          <!-- 2. FULL ORDER CARD (HIỂN THỊ ĐẦY ĐỦ THÔNG TIN ĐƠN HÀNG) -->
+          <div id="drawerOrderFullCard" class="hidden p-4 bg-gradient-to-br from-emerald-50 via-teal-50/60 to-emerald-50 border-b border-emerald-200 text-xs space-y-3">
+            <div class="flex items-center justify-between pb-2 border-b border-emerald-200/80">
+              <div class="flex items-center gap-2">
+                <span class="text-base">📦</span>
+                <span class="font-extrabold text-emerald-950 uppercase tracking-wide text-xs">THÔNG TIN ĐƠN HÀNG ĐÃ CHỐT</span>
+              </div>
+              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-600 text-white shadow-sm flex items-center gap-1">
+                <span>✓</span> COD Thành Công
+              </span>
+            </div>
+
+            <!-- Product & COD Amount -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="bg-white/80 rounded-xl p-2.5 border border-emerald-100">
+                <div class="text-[10px] uppercase font-bold text-slate-400">Combo Sản Phẩm</div>
+                <div class="font-extrabold text-emerald-900 text-xs mt-0.5 truncate" id="orderCardCombo">Combo 1</div>
+              </div>
+              <div class="bg-white/80 rounded-xl p-2.5 border border-emerald-100">
+                <div class="text-[10px] uppercase font-bold text-slate-400">Tiền Thu Hộ COD</div>
+                <div class="font-black text-emerald-700 text-sm mt-0.5" id="orderCardAmount">RM 179.00</div>
+              </div>
+            </div>
+
+            <!-- Shipping Recipient Details -->
+            <div class="bg-white/90 rounded-xl p-3 border border-emerald-200 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500 font-medium">👤 Người nhận:</span>
+                <span class="font-bold text-slate-800 text-right" id="orderCardRecipient">John Doe</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500 font-medium">📞 Số điện thoại:</span>
+                <span class="font-bold text-slate-800 font-mono text-right" id="orderCardPhone">+60 12345678</span>
+              </div>
+              <div class="flex items-start justify-between gap-2 pt-1 border-t border-slate-100">
+                <span class="text-slate-500 font-medium whitespace-nowrap">📍 Địa chỉ giao:</span>
+                <span class="font-semibold text-slate-900 text-right leading-snug" id="orderCardAddress">Kuala Lumpur, Malaysia</span>
+              </div>
+            </div>
+
+            <!-- Action: Copy Order Details -->
+            <button onclick="copyFullOrderInfo()" class="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/20 transition">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+              <span>Sao chép thông tin đơn để giao hàng</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Chat History Messages Container -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-[#e5ddd5]/30" id="drawerChatMessages">
+          <!-- Rendered by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PIN AUTH MODAL -->
+  <div id="pinModal" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm hidden">
+    <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 p-6 w-full max-w-sm mx-4 space-y-4">
+      <div class="text-center">
+        <div class="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-bold mx-auto mb-3">
+          🔒
+        </div>
+        <h3 class="text-base font-bold text-slate-900" id="pinModalTitle">Bảo Mật Dự Án</h3>
+        <p class="text-xs text-slate-500 mt-1">Vui lòng nhập mã PIN bảo mật để truy cập dữ liệu Mini-CRM.</p>
+      </div>
+
+      <form onsubmit="handlePinSubmit(event)" class="space-y-3">
+        <input type="password" id="inputPin" placeholder="Nhập mã PIN (4 số)..." maxlength="10" class="w-full text-center tracking-widest text-lg font-bold py-2.5 px-4 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-emerald-500">
+        <button type="submit" class="w-full py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition">
+          Xác Nhận Truy Cập
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Extract project_id from URL path: /fitgum or /?project_id=fitgum
+    function getProjectIdFromUrl() {
+      const pathParts = window.location.pathname.split('/').filter(Boolean);
+      if (pathParts.length > 0 && pathParts[0] !== 'crm') {
+        return pathParts[0].toLowerCase();
+      }
+      const params = new URLSearchParams(window.location.search);
+      return (params.get('project_id') || 'fitgum').toLowerCase();
+    }
+
+    const PROJECT_ID = getProjectIdFromUrl();
+    let currentPin = localStorage.getItem(`crm_pin_${PROJECT_ID}`) || '1609';
+    let allLeads = [];
+    let funnelData = null;
+    let adsData = [];
+    let activeFilter = 'all';
+    let activeSort = 'last_msg_desc';
+    let activeAdFilter = 'all';
+    let activeFunnelFilter = null;
+    let projectMeta = { name: 'Fitgum Acai Berry Drink', currency: 'RM' };
+    let chartInstance = null;
+    let adsChartInstance = null;
+    let adsFinanceChartInstance = null;
+    let adsOverviewData = null;
+    let pageSize = 20;
+    let currentPage = 1;
+    let activeOrderData = null;
+    let currentView = 'overview';
+
+    // Update Project Slug on Header
+    document.getElementById('projectSlugText').innerText = `Project: ${PROJECT_ID}`;
+
+    function switchView(viewName) {
+      currentView = viewName;
+      document.getElementById('viewOverview').classList.toggle('hidden', viewName !== 'overview');
+      document.getElementById('viewFunnel').classList.toggle('hidden', viewName !== 'funnel');
+      document.getElementById('viewAds').classList.toggle('hidden', viewName !== 'ads');
+
+      // Update sidebar nav active state
+      document.querySelectorAll('.nav-item').forEach(el => {
+        if (el.dataset.view === viewName) {
+          el.className = 'nav-item nav-active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition';
+        } else {
+          el.className = 'nav-item w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition text-slate-600 hover:bg-slate-100';
+        }
+      });
+
+      // Update mobile nav active state
+      document.querySelectorAll('.mob-nav-btn').forEach(el => {
+        if (el.dataset.view === viewName) {
+          el.className = 'mob-nav-btn px-3 py-1.5 rounded-lg font-bold bg-slate-800 text-emerald-400 transition flex items-center gap-1';
+        } else {
+          el.className = 'mob-nav-btn px-3 py-1.5 rounded-lg font-medium text-slate-300 hover:text-white transition flex items-center gap-1';
+        }
+      });
+
+      if (viewName === 'ads' && adsData.length > 0) {
+        if (!adsFinanceChartInstance) renderAdsFinanceChart(adsData);
+        if (!adsChartInstance) renderAdsPerformanceChart(adsData);
+      }
+    }
+
+    function toggleMobileSidebar() {
+      // Toggle views on mobile easily
+      const views = ['overview', 'funnel', 'ads'];
+      const nextIdx = (views.indexOf(currentView) + 1) % views.length;
+      switchView(views[nextIdx]);
+    }
+
+    async function loadData(showLoader = true) {
+      if (showLoader) {
+        document.getElementById('loadingState').classList.remove('hidden');
+        document.getElementById('emptyState').classList.add('hidden');
+        document.getElementById('leadsTableBody').innerHTML = '';
+        document.getElementById('leadsMobileList').innerHTML = '';
+      }
+
+      try {
+        const url = `/api/leads?project_id=${PROJECT_ID}&pin=${encodeURIComponent(currentPin)}&sort_by=${activeSort}`;
+        const res = await fetch(url);
+        const json = await res.json();
+
+        if (!json.success) {
+          if (json.needPin) {
+            document.getElementById('pinModalTitle').innerText = `Bảo Mật Dự Án ${json.projectName || PROJECT_ID}`;
+            document.getElementById('pinModal').classList.remove('hidden');
+            document.getElementById('inputPin').focus();
+            return;
+          }
+          alert(json.error || 'Lỗi tải dữ liệu');
+          return;
+        }
+
+        projectMeta = json.project || projectMeta;
+        document.getElementById('projectTitle').innerText = projectMeta.name || PROJECT_ID;
+        document.getElementById('sidebarProjectName').innerText = projectMeta.name || PROJECT_ID;
+        document.title = `${projectMeta.name || PROJECT_ID} - Mini CRM`;
+
+        allLeads = json.leads || [];
+        funnelData = json.funnelStats || null;
+        adsData = json.adsStats || [];
+        adsOverviewData = json.adsOverview || null;
+
+        updateKpis(json.kpi);
+        renderDailyChart(json.dailyStats || []);
+        renderFunnelView(funnelData);
+        renderAdsView(adsData, adsOverviewData);
+        renderLeads();
+
+        // Update brief in sidebar
+        if (funnelData?.bottleneck) {
+          document.getElementById('sidebarBottleneckBrief').innerText = `${funnelData.bottleneck.name}: ${funnelData.bottleneck.count} leads (${funnelData.bottleneck.percentage}%). Cần tối ưu kịch bản & hình ảnh.`;
+        }
+      } catch (err) {
+        console.error('Fetch error:', err);
+        alert('Không thể kết nối đến máy chủ Vercel / Neon.');
+      } finally {
+        document.getElementById('loadingState').classList.add('hidden');
+      }
+    }
+
+    async function manualSync() {
+      const btn = document.getElementById('btnRefresh');
+      const badge = document.getElementById('syncStatusBadge');
+      const oldHtml = btn ? btn.innerHTML : '';
+      if (btn) {
+        btn.innerHTML = '<span class="inline-block animate-spin mr-1">🔄</span> Đang đồng bộ...';
+        btn.disabled = true;
+      }
+      if (badge) badge.innerHTML = '<span>⏳</span> <span>Đang quét Smax...</span>';
+
+      try {
+        const res = await fetch(`/api/sync?project_id=${PROJECT_ID}`);
+        const json = await res.json();
+        if (json.success) {
+          const newCount = json.newLeads || 0;
+          const updatedCount = json.updatedLeads || 0;
+          const total = json.totalInDb || allLeads.length;
+          let msg = 'Đã đồng bộ Smax! ';
+          if (newCount > 0 || updatedCount > 0) {
+            msg += `Có ${newCount} khách mới, ${updatedCount} hội thoại cập nhật.`;
+          } else {
+            msg += `Dữ liệu đã mới nhất (${total} hội thoại).`;
+          }
+          showToast(msg);
+          if (badge) {
+            const timeStr = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+            badge.innerHTML = `<span>🟢</span> <span>Smax: ${timeStr} (${total} leads)</span>`;
+          }
+        }
+      } catch (e) {
+        console.error('Sync error:', e);
+      } finally {
+        if (btn) {
+          btn.innerHTML = oldHtml;
+          btn.disabled = false;
+        }
+        await loadData(false);
+      }
+    }
+
+    function updateKpis(kpi) {
+      if (!kpi) return;
+      const curr = projectMeta.currency || 'RM';
+      document.getElementById('kpiClosedOrders').innerText = kpi.closedOrders || 0;
+      document.getElementById('kpiRevenue').innerText = `${curr} ${(kpi.totalRevenue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+      document.getElementById('kpiHotLeads').innerText = kpi.hotLeads || 0;
+      const hotRate = kpi.totalLeads > 0 ? Math.round((kpi.hotLeads / kpi.totalLeads) * 100) : 0;
+      document.getElementById('kpiHotRate').innerText = `${hotRate}%`;
+      document.getElementById('kpiConsulting').innerText = kpi.consultingLeads || 0;
+      document.getElementById('kpiTotalLeads').innerText = kpi.totalLeads || 0;
+      document.getElementById('kpiNoResponse').innerText = kpi.noResponseLeads || 0;
+
+      // Update tab counts
+      document.getElementById('tabCountAll').innerText = kpi.totalLeads || 0;
+      document.getElementById('tabCountClosed').innerText = kpi.closedOrders || 0;
+      document.getElementById('tabCountHot').innerText = kpi.hotLeads || 0;
+      document.getElementById('tabCountConsulting').innerText = kpi.consultingLeads || 0;
+      document.getElementById('tabCountNoResponse').innerText = kpi.noResponseLeads || 0;
+    }
+
+    // 2. Render Line Chart with Chart.js
+    function renderDailyChart(dailyStats) {
+      const ctx = document.getElementById('dailyPerformanceChart')?.getContext('2d');
+      if (!ctx) return;
+
+      const labels = dailyStats.map(d => {
+        const parts = d.day.split('-');
+        return `${parts[2]}/${parts[1]}`;
+      });
+
+      const dataTotal = dailyStats.map(d => parseInt(d.total, 10));
+      const dataConsulting = dailyStats.map(d => parseInt(d.consulting, 10));
+      const dataHot = dailyStats.map(d => parseInt(d.hot, 10));
+      const dataClosed = dailyStats.map(d => parseInt(d.closed, 10));
+
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Tổng số lead',
+              data: dataTotal,
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.08)',
+              borderWidth: 2.5,
+              tension: 0.35,
+              fill: true,
+              pointBackgroundColor: '#6366f1',
+              pointRadius: 4,
+              pointHoverRadius: 6
+            },
+            {
+              label: 'Đang tư vấn',
+              data: dataConsulting,
+              borderColor: '#0284c7',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              borderDash: [4, 4],
+              tension: 0.35,
+              pointBackgroundColor: '#0284c7',
+              pointRadius: 3,
+              pointHoverRadius: 5
+            },
+            {
+              label: 'Có nhu cầu cao',
+              data: dataHot,
+              borderColor: '#f59e0b',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              tension: 0.35,
+              pointBackgroundColor: '#f59e0b',
+              pointRadius: 4,
+              pointHoverRadius: 6
+            },
+            {
+              label: 'Đơn chốt thành công',
+              data: dataClosed,
+              borderColor: '#10b981',
+              backgroundColor: 'rgba(16, 185, 129, 0.12)',
+              borderWidth: 3,
+              tension: 0.35,
+              fill: true,
+              pointBackgroundColor: '#10b981',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2,
+              pointRadius: 6,
+              pointHoverRadius: 8
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: { mode: 'index', intersect: false },
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleFont: { size: 12, family: 'Roboto', weight: 'bold' },
+              bodyFont: { size: 12, family: 'Roboto' },
+              padding: 10,
+              cornerRadius: 10,
+              callbacks: {
+                title: items => `Ngày ${items[0].label}`
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { font: { family: 'Roboto', size: 11 }, color: '#64748b' }
+            },
+            y: {
+              beginAtZero: true,
+              grid: { color: '#f1f5f9' },
+              ticks: { font: { family: 'Roboto', size: 11 }, color: '#64748b', precision: 0 }
+            }
+          }
+        }
+      });
+    }
+
+    // 3. Render 7-Step Funnel View
+    function renderFunnelView(funnel) {
+      if (!funnel || !funnel.steps) return;
+
+      const container = document.getElementById('funnelStepsContainer');
+      container.innerHTML = '';
+
+      const totalLeads = allLeads.length || 1;
+      const closedCount = (funnel.steps.find(s => s.num === 7)?.count) || 0;
+      const closingRate = ((closedCount / totalLeads) * 100).toFixed(1);
+      document.getElementById('funnelClosingRateOverall').innerText = `${closingRate}%`;
+
+      if (funnel.bottleneck) {
+        document.getElementById('funnelBottleneckTitle').innerText = `Điểm Nghẽn Lớn Nhất: ${funnel.bottleneck.name} (${funnel.bottleneck.percentage}% Khách Hàng)`;
+        document.getElementById('funnelBottleneckDesc').innerHTML = `
+          Có tới <strong>${funnel.bottleneck.count} leads (${funnel.bottleneck.percentage}%)</strong> đang kẹt tại giai đoạn này. 
+          Mục tiêu bước: <em>${funnel.bottleneck.objective}</em>.
+          <br><span class="font-bold text-amber-950">Hành động khắc phục:</span> ${funnel.bottleneck.bottleneckAction}
+        `;
+      }
+
+      funnel.steps.forEach(step => {
+        const isBottleneck = funnel.bottleneck && funnel.bottleneck.num === step.num;
+        const div = document.createElement('div');
+        div.className = `p-4 rounded-xl border transition hover:shadow-sm ${
+          isBottleneck 
+            ? 'bg-amber-50/70 border-amber-300 ring-2 ring-amber-300/30' 
+            : 'bg-slate-50 border-slate-200'
+        }`;
+
+        div.innerHTML = `
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+            <div class="flex items-center gap-2">
+              <span class="w-6 h-6 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center flex-shrink-0">
+                ${step.num}
+              </span>
+              <div>
+                <h4 class="font-bold text-slate-900 text-xs sm:text-sm flex items-center gap-1.5">
+                  ${step.name}
+                  ${isBottleneck ? '<span class="text-[10px] font-bold bg-amber-500 text-white px-2 py-0.2 rounded-full">⚠️ Điểm nghẽn #1</span>' : ''}
+                </h4>
+                <p class="text-[11px] text-slate-500">${step.objective}</p>
+              </div>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="text-right">
+                <span class="text-sm sm:text-base font-extrabold text-slate-900">${step.count}</span>
+                <span class="text-xs text-slate-500 font-semibold">(${step.percentage}%)</span>
+              </div>
+              <button onclick="filterByFunnelStep(${step.num}, '${step.short}')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-white border border-slate-300 text-slate-700 hover:bg-slate-100 transition whitespace-nowrap">
+                Lọc ${step.count} leads &rarr;
+              </button>
+            </div>
+          </div>
+          <!-- Progress Bar -->
+          <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+            <div class="h-2.5 rounded-full transition-all duration-500 ${
+              step.num === 7 ? 'bg-emerald-500' : (isBottleneck ? 'bg-amber-500' : 'bg-indigo-600')
+            }" style="width: ${Math.max(step.percentage, 2)}%"></div>
+          </div>
+          <div class="mt-2 text-[11px] text-slate-600 flex items-center gap-1">
+            <span class="font-semibold text-slate-700">Khuyến nghị tối ưu:</span>
+            <span>${step.bottleneckAction}</span>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // Smax API Connector Copy Helper
+    function copyAdsWebhookUrl() {
+      const url = `${window.location.origin}/api/ads-webhook?project_id=${PROJECT_ID}`;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(url).then(() => {
+          showToast('Đã copy URL API Connector Smax vào clipboard!');
+        }).catch(() => {
+          prompt('Copy URL dưới đây để dán vào Smax:', url);
+        });
+      } else {
+        prompt('Copy URL dưới đây để dán vào Smax:', url);
+      }
+    }
+
+    // 4. Render Ads Campaign View
+    function renderAdsView(ads, overview) {
+      if (!ads) return;
+
+      // Update Webhook URL display dynamically
+      const webhookDisplay = document.getElementById('adsWebhookUrlDisplay');
+      if (webhookDisplay) {
+        webhookDisplay.innerText = `${window.location.origin}/api/ads-webhook?project_id=${PROJECT_ID}`;
+      }
+
+      // Update Overview KPI Cards
+      const ov = overview || {};
+      const curr = projectMeta.currency || 'RM';
+
+      if (document.getElementById('adsKpiSpend')) {
+        document.getElementById('adsKpiSpend').innerText = (ov.totalSpend || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('adsKpiSpendCurrency').innerText = curr;
+        document.getElementById('adsKpiImpressions').innerText = (ov.totalImpressions || 0).toLocaleString();
+        document.getElementById('adsKpiClicks').innerText = (ov.totalClicks || 0).toLocaleString();
+        document.getElementById('adsKpiCtr').innerText = `${ov.avgCtr || '0.00'}%`;
+      }
+
+      if (document.getElementById('adsKpiRevenue')) {
+        document.getElementById('adsKpiRevenue').innerText = (ov.totalRevenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        document.getElementById('adsKpiRevCurrency').innerText = curr;
+        const roasVal = parseFloat(ov.blendedRoas || 0);
+        const roasBadge = document.getElementById('adsKpiRoasBadge');
+        if (roasBadge) {
+          roasBadge.innerText = `ROAS ${roasVal.toFixed(2)}x`;
+          if (roasVal >= 2.0) {
+            roasBadge.className = 'px-2 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300';
+          } else if (roasVal >= 1.0) {
+            roasBadge.className = 'px-2 py-0.5 rounded-full text-[11px] font-black bg-teal-100 text-teal-800 border border-teal-300';
+          } else {
+            roasBadge.className = 'px-2 py-0.5 rounded-full text-[11px] font-black bg-amber-100 text-amber-800 border border-amber-300';
+          }
+        }
+      }
+
+      if (document.getElementById('adsKpiCpa')) {
+        document.getElementById('adsKpiCpa').innerText = ov.blendedCpa || '0.00';
+        document.getElementById('adsKpiCpaCurrency').innerText = `${curr} / đơn`;
+        document.getElementById('adsKpiOrders').innerText = ov.totalOrders || 0;
+      }
+
+      if (document.getElementById('adsKpiCpl')) {
+        document.getElementById('adsKpiCpl').innerText = ov.blendedCpl || '0.00';
+        document.getElementById('adsKpiCplCurrency').innerText = `${curr} / lead`;
+        document.getElementById('adsKpiCpc').innerText = `${curr} ${ov.avgCpc || '0.00'}`;
+        document.getElementById('adsKpiCpm').innerText = `${curr} ${ov.avgCpm || '0.00'}`;
+      }
+
+      // Smart Recommendation Banner
+      const topAd = ads.find(a => (a.closed_orders > 0 || parseFloat(a.roas) > 0)) || ads[0] || {};
+      const highSpendZeroOrder = ads.find(a => (a.spend > 50 && a.closed_orders === 0 && a.total_leads >= 10));
+      const recElem = document.getElementById('adsRecommendationText');
+      if (recElem) {
+        let recHtml = '';
+        if (topAd && topAd.ad_id) {
+          recHtml += `🚀 <strong>Top Chốt Đơn</strong>: Mã Ad <span class="font-mono font-bold text-emerald-800">${topAd.ad_id}</span> (${topAd.ad_name || 'Quảng cáo'}) đạt ROAS <strong class="text-emerald-700">${topAd.roas || '0'}x</strong> với ${topAd.closed_orders} đơn COD (${curr} ${topAd.revenue}). Nên giữ ngân sách hoặc scale thêm.`;
+        }
+        if (highSpendZeroOrder) {
+          recHtml += `<br class="my-1"/>⚠️ <strong>Cần Tối Ưu</strong>: Mã <span class="font-mono font-bold text-amber-800">${highSpendZeroOrder.ad_id}</span> đã tiêu ${curr} ${highSpendZeroOrder.spend} và mang về ${highSpendZeroOrder.total_leads} leads nhưng chưa có đơn. Đề xuất: Tối ưu lại kịch bản Bước 4 (Báo giá) và gửi ảnh review ở Bước 3 sớm hơn.`;
+        }
+        recElem.innerHTML = recHtml || 'Đang theo dõi hiệu quả các chiến dịch Meta Click-to-WhatsApp. Dữ liệu sẽ tự động cập nhật khi có tương tác mới.';
+      }
+
+      renderAdsTableFiltered();
+      renderAdsFinanceChart(ads);
+      renderAdsPerformanceChart(ads);
+    }
+
+    function renderAdsTableFiltered() {
+      const search = (document.getElementById('adsSearchInput')?.value || '').toLowerCase().trim();
+      const curr = projectMeta.currency || 'RM';
+      const tableBody = document.getElementById('adsTableBody');
+      if (!tableBody) return;
+      tableBody.innerHTML = '';
+
+      const filtered = adsData.filter(ad => {
+        if (!search) return true;
+        return (
+          (ad.ad_id && ad.ad_id.toLowerCase().includes(search)) ||
+          (ad.ad_name && ad.ad_name.toLowerCase().includes(search)) ||
+          (ad.campaign_name && ad.campaign_name.toLowerCase().includes(search)) ||
+          (ad.adset_name && ad.adset_name.toLowerCase().includes(search))
+        );
+      });
+
+      if (filtered.length === 0) {
+        tableBody.innerHTML = `
+          <tr>
+            <td colspan="13" class="py-8 text-center text-slate-400 text-xs">
+              Không tìm thấy quảng cáo nào phù hợp với từ khóa "${search}".
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      filtered.forEach(ad => {
+        const roas = parseFloat(ad.roas || 0);
+        let roasBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600">0.00x</span>`;
+        if (roas >= 2.0) {
+          roasBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-black bg-emerald-100 text-emerald-800 border border-emerald-300">🔥 ${roas.toFixed(2)}x</span>`;
+        } else if (roas >= 1.0) {
+          roasBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-teal-100 text-teal-800 border border-teal-200">${roas.toFixed(2)}x</span>`;
+        } else if (ad.spend > 0) {
+          roasBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">${roas.toFixed(2)}x</span>`;
+        }
+
+        let tagEval = '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-slate-100 text-slate-600">Organic / Direct</span>';
+        if (ad.closed_orders > 0) {
+          tagEval = '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-100 text-emerald-800">⭐⭐⭐ Top ROI (Chốt đơn)</span>';
+        } else if (ad.hot_rate >= 25) {
+          tagEval = '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-100 text-amber-800">🔥 Nhu cầu cao (Follow-up)</span>';
+        } else if (ad.total_leads >= 20) {
+          tagEval = '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-100 text-blue-800">⚠️ Traffic cao (Cần tối ưu giá)</span>';
+        } else if (ad.spend > 0 && ad.total_leads === 0) {
+          tagEval = '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700">Chưa có lead WhatsApp</span>';
+        }
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/80 transition';
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-mono">
+            <div class="flex flex-col">
+              <span class="font-bold text-slate-900">${ad.ad_name || (ad.ad_id === 'Organic / Direct' ? 'Khách Vãng Lai / Organic' : 'Chưa đặt tên Ad')}</span>
+              <div class="flex items-center gap-1 mt-0.5">
+                <span class="text-[11px] text-slate-500 font-mono">${ad.ad_id}</span>
+                ${ad.ad_id !== 'Organic / Direct' ? `
+                  <button onclick="navigator.clipboard.writeText('${ad.ad_id}'); showToast('Đã copy mã Ad!');" class="text-slate-400 hover:text-slate-600 p-0.5" title="Copy mã Ad">
+                    📋
+                  </button>
+                ` : ''}
+              </div>
+            </div>
+          </td>
+          <td class="py-3 px-3 text-slate-600 text-xs">
+            <div class="max-w-[180px] truncate" title="${ad.campaign_name || ''}">${ad.campaign_name || '—'}</div>
+            <div class="text-[10px] text-slate-400 max-w-[180px] truncate" title="${ad.adset_name || ''}">${ad.adset_name || ''}</div>
+          </td>
+          <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
+            ${curr} ${(ad.spend || 0).toFixed(2)}
+          </td>
+          <td class="py-3 px-3 text-center whitespace-nowrap">
+            <div class="text-slate-800 font-medium">${(ad.clicks || 0).toLocaleString()} clicks</div>
+            <div class="text-[10px] text-slate-500">${(ad.impressions || 0).toLocaleString()} views (${(ad.ctr || 0).toFixed(2)}%)</div>
+          </td>
+          <td class="py-3 px-3 text-center font-bold text-slate-800">${ad.total_leads}</td>
+          <td class="py-3 px-3 text-center whitespace-nowrap">
+            <span class="font-bold text-amber-700">${ad.hot_leads}</span>
+            <span class="text-[10px] text-slate-500">(${ad.hot_rate}%)</span>
+          </td>
+          <td class="py-3 px-3 text-center whitespace-nowrap">
+            <span class="font-extrabold ${ad.closed_orders > 0 ? 'text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200' : 'text-slate-400'}">
+              ${ad.closed_orders}
+            </span>
+          </td>
+          <td class="py-3 px-3 text-right font-mono font-bold text-emerald-700 whitespace-nowrap">
+            ${curr} ${(ad.revenue || 0).toFixed(2)}
+          </td>
+          <td class="py-3 px-3 text-right font-mono text-slate-700 whitespace-nowrap">
+            ${ad.cost_per_order > 0 ? `${curr} ${ad.cost_per_order.toFixed(2)}` : '—'}
+          </td>
+          <td class="py-3 px-3 text-right font-mono text-slate-700 whitespace-nowrap">
+            ${ad.cost_per_lead > 0 ? `${curr} ${ad.cost_per_lead.toFixed(2)}` : '—'}
+          </td>
+          <td class="py-3 px-3 text-center whitespace-nowrap">
+            ${roasBadge}
+          </td>
+          <td class="py-3 px-3 whitespace-nowrap">${tagEval}</td>
+          <td class="py-3 px-4 text-right whitespace-nowrap">
+            <button onclick="filterByAdId('${ad.ad_id}')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition border border-emerald-200">
+              Lọc ${ad.total_leads} leads &rarr;
+            </button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+      });
+    }
+
+    function renderAdsFinanceChart(ads) {
+      const ctx = document.getElementById('adsFinanceChart')?.getContext('2d');
+      if (!ctx) return;
+
+      const validAds = ads.filter(a => (a.spend > 0 || a.revenue > 0));
+      const displayAds = validAds.length > 0 ? validAds : ads.slice(0, 6);
+
+      const labels = displayAds.map(a => a.ad_name ? (a.ad_name.length > 15 ? a.ad_name.substring(0, 15) + '...' : a.ad_name) : (a.ad_id === 'Organic / Direct' ? 'Organic' : `Ad ${a.ad_id.slice(-6)}`));
+      const spendData = displayAds.map(a => a.spend || 0);
+      const revenueData = displayAds.map(a => a.revenue || 0);
+
+      if (adsFinanceChartInstance) adsFinanceChartInstance.destroy();
+
+      adsFinanceChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Chi Phí (Spend)',
+              data: spendData,
+              backgroundColor: '#a855f7',
+              borderRadius: 6
+            },
+            {
+              label: 'Doanh Thu (Revenue)',
+              data: revenueData,
+              backgroundColor: '#10b981',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false } },
+            y: { beginAtZero: true }
+          }
+        }
+      });
+    }
+
+    function renderAdsPerformanceChart(ads) {
+      const ctx = document.getElementById('adsPerformanceChart')?.getContext('2d');
+      if (!ctx) return;
+
+      const labels = ads.map(a => a.ad_id === 'Organic / Direct' ? 'Organic' : `Ad ${a.ad_id.slice(-6)}`);
+      const totalData = ads.map(a => a.total_leads);
+      const hotData = ads.map(a => a.hot_leads);
+
+      if (adsChartInstance) adsChartInstance.destroy();
+
+      adsChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Tổng Leads',
+              data: totalData,
+              backgroundColor: '#6366f1',
+              borderRadius: 6
+            },
+            {
+              label: 'Có Nhu Cầu Cao',
+              data: hotData,
+              backgroundColor: '#f59e0b',
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            x: { grid: { display: false } },
+            y: { beginAtZero: true, precision: 0 }
+          }
+        }
+      });
+    }
+
+    // Filter Actions from Funnel and Ads Views
+    function filterByAdId(adId) {
+      activeAdFilter = adId;
+      activeFunnelFilter = null;
+      updateFilterPills();
+      switchView('overview');
+      currentPage = 1;
+      renderLeads();
+    }
+
+    function filterByFunnelStep(stepNum, stepName) {
+      activeFunnelFilter = { num: stepNum, name: stepName };
+      activeAdFilter = 'all';
+      updateFilterPills();
+      switchView('overview');
+      currentPage = 1;
+      renderLeads();
+    }
+
+    function updateFilterPills() {
+      const container = document.getElementById('activeFilterPills');
+      container.innerHTML = '';
+
+      if (activeAdFilter !== 'all') {
+        const pill = document.createElement('span');
+        pill.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200';
+        pill.innerHTML = `
+          <span>Mã Ad: ${activeAdFilter}</span>
+          <button onclick="clearAdFilter()" class="hover:text-red-600 font-bold ml-1">&times;</button>
+        `;
+        container.appendChild(pill);
+      }
+
+      if (activeFunnelFilter) {
+        const pill = document.createElement('span');
+        pill.className = 'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-indigo-100 text-indigo-800 border border-indigo-200';
+        pill.innerHTML = `
+          <span>${activeFunnelFilter.name}</span>
+          <button onclick="clearFunnelFilter()" class="hover:text-red-600 font-bold ml-1">&times;</button>
+        `;
+        container.appendChild(pill);
+      }
+    }
+
+    function clearAdFilter() {
+      activeAdFilter = 'all';
+      updateFilterPills();
+      currentPage = 1;
+      renderLeads();
+    }
+
+    function clearFunnelFilter() {
+      activeFunnelFilter = null;
+      updateFilterPills();
+      currentPage = 1;
+      renderLeads();
+    }
+
+    function setStatusFilter(status) {
+      activeFilter = status;
+      currentPage = 1;
+      document.querySelectorAll('.status-tab').forEach(b => {
+        if (b.dataset.status === status) {
+          b.className = 'status-tab px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-semibold transition bg-slate-900 text-white';
+        } else {
+          b.className = 'status-tab px-3.5 py-1.5 rounded-xl text-xs sm:text-sm font-medium text-slate-600 hover:bg-slate-100 transition';
+        }
+      });
+      renderLeads();
+    }
+
+    function handleSortSelectChange(value) {
+      activeSort = value;
+      updateSortHeaderIcons();
+      loadData(true);
+    }
+
+    function toggleHeaderSort(column) {
+      if (column === 'last_msg') {
+        activeSort = activeSort === 'last_msg_desc' ? 'last_msg_asc' : 'last_msg_desc';
+      } else if (column === 'first_msg') {
+        activeSort = activeSort === 'first_msg_desc' ? 'first_msg_asc' : 'first_msg_desc';
+      }
+      document.getElementById('sortSelect').value = activeSort;
+      updateSortHeaderIcons();
+      loadData(true);
+    }
+
+    function updateSortHeaderIcons() {
+      const iconFirst = document.getElementById('sortIconFirst');
+      const iconLast = document.getElementById('sortIconLast');
+
+      if (activeSort === 'last_msg_desc') {
+        iconLast.innerText = '🔽';
+        iconFirst.innerText = '↕️';
+      } else if (activeSort === 'last_msg_asc') {
+        iconLast.innerText = '🔼';
+        iconFirst.innerText = '↕️';
+      } else if (activeSort === 'first_msg_desc') {
+        iconFirst.innerText = '🔽';
+        iconLast.innerText = '↕️';
+      } else if (activeSort === 'first_msg_asc') {
+        iconFirst.innerText = '🔼';
+        iconLast.innerText = '↕️';
+      }
+    }
+
+    function handleSearch() {
+      currentPage = 1;
+      renderLeads();
+    }
+
+    function getFilteredLeads() {
+      const q = (document.getElementById('searchInput').value || '').trim().toLowerCase();
+      return allLeads.filter(l => {
+        const matchesStatus = (activeFilter === 'all') || (l.conversation_result === activeFilter);
+        
+        let matchesAd = true;
+        if (activeAdFilter !== 'all') {
+          if (activeAdFilter === 'Organic / Direct') {
+            matchesAd = !l.ad_id || l.ad_id.trim() === '';
+          } else {
+            matchesAd = (l.ad_id === activeAdFilter);
+          }
+        }
+
+        let matchesFunnel = true;
+        if (activeFunnelFilter) {
+          matchesFunnel = (l.funnel_step_num === activeFunnelFilter.num);
+        }
+
+        const matchesSearch = !q || (
+          (l.customer_name && l.customer_name.toLowerCase().includes(q)) ||
+          (l.phone && l.phone.toLowerCase().includes(q)) ||
+          (l.ad_id && l.ad_id.toLowerCase().includes(q)) ||
+          (l.funnel_step && l.funnel_step.toLowerCase().includes(q)) ||
+          (l.order_details && l.order_details.toLowerCase().includes(q)) ||
+          (l.main_intent && l.main_intent.toLowerCase().includes(q)) ||
+          (l.dropoff_reason && l.dropoff_reason.toLowerCase().includes(q))
+        );
+
+        return matchesStatus && matchesAd && matchesFunnel && matchesSearch;
+      });
+    }
+
+    function getStatusBadge(result) {
+      switch(result) {
+        case 'Đã chốt đơn':
+          return '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">✅ Đã chốt đơn</span>';
+        case 'Có nhu cầu':
+          return '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-800">🔥 Có nhu cầu</span>';
+        case 'Đang tư vấn':
+          return '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700">💬 Đang tư vấn</span>';
+        default:
+          return '<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-600">⏳ Chưa phản hồi</span>';
+      }
+    }
+
+    function getFunnelBadge(stepNum, stepName) {
+      const colors = {
+        1: 'bg-slate-100 text-slate-700 border-slate-200',
+        2: 'bg-purple-50 text-purple-700 border-purple-200',
+        3: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+        4: 'bg-blue-50 text-blue-700 border-blue-200',
+        5: 'bg-amber-50 text-amber-800 border-amber-200',
+        6: 'bg-teal-50 text-teal-800 border-teal-200',
+        7: 'bg-emerald-50 text-emerald-800 border-emerald-200 font-bold'
+      };
+      const cls = colors[stepNum] || 'bg-slate-50 text-slate-600 border-slate-200';
+      const shortNames = {
+        1: '1. Chào mừng',
+        2: '2. Tư vấn USP',
+        3: '3. Review/Proof',
+        4: '4. Báo giá Combo',
+        5: '5. Xử lý từ chối',
+        6: '6. Thu thập COD',
+        7: '7. Chốt đơn COD'
+      };
+      const label = shortNames[stepNum] || stepName || `Step ${stepNum}`;
+      return `<span class="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold border ${cls}" title="${stepName || ''}">${label}</span>`;
+    }
+
+    function extractOrderShipping(lead) {
+      let recipient = lead.customer_name || 'Khách hàng';
+      let phone = lead.phone || '';
+      let address = '';
+      let combo = lead.order_combo || 'Combo 1 (Buy 3 Get 3 FREE)';
+      let amount = lead.order_amount || 179.00;
+
+      if (lead.order_details && lead.order_details.includes('|')) {
+        const parts = lead.order_details.split('|').map(p => p.trim());
+        parts.forEach(p => {
+          if (p.includes('Người nhận:')) recipient = p.replace(/.*Người nhận:\s*/, '').trim();
+          if (p.includes('SĐT:')) phone = p.replace(/.*SĐT:\s*/, '').trim();
+          if (p.includes('Địa chỉ:')) address = p.replace(/.*Địa chỉ:\s*/, '').trim();
+          if (p.includes('Combo') && !p.includes('📦')) combo = p.trim();
+        });
+      }
+
+      if (!address && lead.key_evidence) {
+        const raw = lead.key_evidence.trim();
+        const lines = raw.split('\n').map(l => l.trim()).filter(Boolean);
+        if (lines.length >= 2) {
+          const phoneIdx = lines.findIndex(l => /(\+?60|01)\d/i.test(l.replace(/[\s-]/g, '')));
+          if (phoneIdx >= 0) {
+            phone = lines[phoneIdx];
+            if (phoneIdx > 0) recipient = lines.slice(0, phoneIdx).join(' ');
+            address = lines.slice(phoneIdx + 1).join(', ');
+          } else {
+            address = lines.join(', ');
+          }
+        } else {
+          address = raw;
+        }
+      }
+
+      if (!address) address = 'Địa chỉ đã chốt trong hội thoại chat bên dưới';
+
+      return { recipient, phone, address, combo, amount };
+    }
+
+    function renderLeads() {
+      const filteredList = getFilteredLeads();
+      const totalItems = filteredList.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
+
+      const startIndex = (currentPage - 1) * pageSize;
+      const endIndex = Math.min(startIndex + pageSize, totalItems);
+      const pageItems = filteredList.slice(startIndex, endIndex);
+
+      const tableBody = document.getElementById('leadsTableBody');
+      const mobileList = document.getElementById('leadsMobileList');
+      const emptyState = document.getElementById('emptyState');
+      const paginationBar = document.getElementById('paginationBar');
+
+      tableBody.innerHTML = '';
+      mobileList.innerHTML = '';
+
+      if (totalItems === 0) {
+        emptyState.classList.remove('hidden');
+        if (paginationBar) paginationBar.classList.add('hidden');
+        return;
+      }
+      emptyState.classList.add('hidden');
+      if (paginationBar) paginationBar.classList.remove('hidden');
+
+      pageItems.forEach((l, idx) => {
+        const initials = (l.customer_name || 'KH').substring(0, 2).toUpperCase();
+        const firstTimeFormatted = l.first_msg_at ? new Date(l.first_msg_at).toLocaleDateString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '-';
+        const lastTimeFormatted = l.last_msg_at ? new Date(l.last_msg_at).toLocaleDateString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit' }) : '-';
+
+        const tagBadge = l.tagged_success_at ? '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200 mt-1" title="Đã gắn tag Smax: Thành công">🏷️ Smax: Thành công</span>' :
+          (l.tagged_demand_at ? '<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 mt-1" title="Đã gắn tag Smax: Có nhu cầu">🏷️ Smax: Có nhu cầu</span>' : '');
+
+        const adBadge = l.ad_id ? `
+          <button onclick="event.stopPropagation(); filterByAdId('${l.ad_id}')" class="font-mono text-[11px] font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 px-2 py-0.5 rounded border border-slate-200 transition" title="Bấm để lọc theo Ad ID này">
+            ${l.ad_id}
+          </button>
+        ` : `<span class="text-slate-400 text-xs italic">Organic</span>`;
+
+        const funnelBadge = getFunnelBadge(l.funnel_step_num || 1, l.funnel_step);
+
+        // 1. Desktop Row
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50/80 transition cursor-pointer';
+        tr.onclick = (e) => {
+          if (!e.target.closest('button')) openChatDrawer(l);
+        };
+        tr.innerHTML = `
+          <td class="py-3.5 px-4">
+            <div class="flex items-center space-x-3">
+              <div class="w-8 h-8 rounded-full bg-slate-100 text-slate-600 font-bold text-xs flex items-center justify-center flex-shrink-0">
+                ${initials}
+              </div>
+              <div>
+                <div class="font-bold text-slate-900">${l.customer_name || 'Chưa có tên'}</div>
+                <div class="text-xs text-slate-500 font-mono">${l.phone || l.tid}</div>
+              </div>
+            </div>
+          </td>
+          <td class="py-3.5 px-3 whitespace-nowrap">
+            ${adBadge}
+          </td>
+          <td class="py-3.5 px-3 whitespace-nowrap">
+            ${funnelBadge}
+          </td>
+          <td class="py-3.5 px-3 whitespace-nowrap">
+            <div>${getStatusBadge(l.conversation_result)}</div>
+            ${tagBadge ? `<div>${tagBadge}</div>` : ''}
+          </td>
+          <td class="py-3.5 px-4 max-w-[180px]">
+            <p class="text-xs text-slate-700 truncate" title="${l.main_intent || ''}">${l.main_intent || 'Tìm hiểu thông tin'}</p>
+            <span class="text-[11px] text-slate-400">${l.total_messages} tin (${l.customer_messages} KH)</span>
+          </td>
+          <td class="py-3.5 px-4 max-w-[200px]">
+            ${l.order_combo ? `
+              <div class="font-bold text-emerald-700 text-xs">${l.order_combo}</div>
+              <div class="text-[11px] text-slate-500 truncate" title="${l.order_details || ''}">${l.order_details || ''}</div>
+            ` : `<span class="text-xs text-slate-400 italic">Chưa chốt combo</span>`}
+          </td>
+          <td class="py-3.5 px-3 text-xs text-slate-500 whitespace-nowrap font-mono">
+            ${firstTimeFormatted}
+          </td>
+          <td class="py-3.5 px-3 text-xs font-semibold text-slate-800 whitespace-nowrap font-mono">
+            ${lastTimeFormatted}
+          </td>
+          <td class="py-3.5 px-4 text-right whitespace-nowrap">
+            <button onclick="openChatDrawerByTid('${l.tid}')" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition">
+              Xem chat 💬
+            </button>
+          </td>
+        `;
+        tableBody.appendChild(tr);
+
+        // 2. Mobile Card
+        const card = document.createElement('div');
+        card.className = 'p-4 hover:bg-slate-50 transition cursor-pointer';
+        card.onclick = () => openChatDrawer(l);
+        card.innerHTML = `
+          <div class="flex items-start justify-between gap-2 mb-2">
+            <div>
+              <h4 class="font-bold text-slate-900 text-sm">${l.customer_name || 'Khách hàng'}</h4>
+              <p class="text-xs text-slate-500 font-mono">${l.phone || l.tid}</p>
+            </div>
+            <div class="text-right">
+              ${getStatusBadge(l.conversation_result)}
+              ${tagBadge ? `<div class="mt-1">${tagBadge}</div>` : ''}
+            </div>
+          </div>
+          <div class="flex items-center gap-2 mb-2">
+            ${funnelBadge}
+            ${l.ad_id ? `<span class="text-[10px] font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">Ad: ${l.ad_id}</span>` : ''}
+          </div>
+          ${l.order_combo ? `
+            <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-2.5 my-2 text-xs text-emerald-800">
+              <span class="font-bold">📦 ${l.order_combo}</span>
+              <p class="text-[11px] text-emerald-700 mt-0.5 line-clamp-1">${l.order_details || ''}</p>
+            </div>
+          ` : ''}
+          <div class="flex items-center justify-between text-xs text-slate-400 mt-2 font-mono">
+            <span>Đầu: ${firstTimeFormatted}</span>
+            <span class="font-bold text-slate-700">Cuối: ${lastTimeFormatted}</span>
+          </div>
+        `;
+        mobileList.appendChild(card);
+      });
+
+      renderPagination(totalItems, totalPages, startIndex, endIndex);
+    }
+
+    function renderPagination(totalItems, totalPages, startIndex, endIndex) {
+      const infoEl = document.getElementById('paginationInfo');
+      if (infoEl) {
+        infoEl.innerText = `Hiển thị ${totalItems > 0 ? startIndex + 1 : 0} - ${endIndex} trong tổng số ${totalItems} hội thoại`;
+      }
+
+      const btnContainer = document.getElementById('paginationButtons');
+      if (!btnContainer) return;
+      btnContainer.innerHTML = '';
+
+      const prevBtn = document.createElement('button');
+      prevBtn.innerHTML = '‹ Trước';
+      prevBtn.className = `px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+        currentPage === 1 
+          ? 'text-slate-300 cursor-not-allowed bg-slate-100' 
+          : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50'
+      }`;
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.onclick = () => goToPage(currentPage - 1);
+      btnContainer.appendChild(prevBtn);
+
+      const pagesToShow = [];
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === 1 || i === totalPages || (i >= currentPage - 1 && i <= currentPage + 1)) {
+          pagesToShow.push(i);
+        }
+      }
+
+      let lastP = 0;
+      pagesToShow.forEach(p => {
+        if (lastP && p - lastP > 1) {
+          const dots = document.createElement('span');
+          dots.className = 'px-1.5 text-slate-400 text-xs font-bold';
+          dots.innerText = '...';
+          btnContainer.appendChild(dots);
+        }
+        const btn = document.createElement('button');
+        btn.innerText = p;
+        btn.className = `min-w-[28px] h-7 px-2 rounded-lg text-xs font-bold transition ${
+          p === currentPage
+            ? 'bg-slate-900 text-white shadow-sm'
+            : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-50'
+        }`;
+        btn.onclick = () => goToPage(p);
+        btnContainer.appendChild(btn);
+        lastP = p;
+      });
+
+      const nextBtn = document.createElement('button');
+      nextBtn.innerHTML = 'Sau ›';
+      nextBtn.className = `px-2.5 py-1 rounded-lg text-xs font-semibold transition ${
+        currentPage === totalPages 
+          ? 'text-slate-300 cursor-not-allowed bg-slate-100' 
+          : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50'
+      }`;
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.onclick = () => goToPage(currentPage + 1);
+      btnContainer.appendChild(nextBtn);
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      renderLeads();
+      const el = document.getElementById('statusTabs');
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function changePageSize(newSize) {
+      pageSize = newSize;
+      currentPage = 1;
+      renderLeads();
+    }
+
+    function openChatDrawerByTid(tid) {
+      const lead = allLeads.find(l => l.tid === tid);
+      if (lead) openChatDrawer(lead);
+    }
+
+    function openChatDrawer(lead) {
+      document.getElementById('drawerTitle').innerText = lead.customer_name || 'Khách hàng';
+      document.getElementById('drawerPhone').innerText = `${lead.phone || lead.tid}`;
+      document.getElementById('drawerAvatar').innerText = (lead.customer_name || 'KH').substring(0, 2).toUpperCase();
+
+      // Funnel badge in drawer
+      const fStepBadge = document.getElementById('drawerFunnelStepBadge');
+      fStepBadge.innerHTML = getFunnelBadge(lead.funnel_step_num || 1, lead.funnel_step);
+
+      const standardBox = document.getElementById('drawerStandardBox');
+      const orderCard = document.getElementById('drawerOrderFullCard');
+      const isClosed = lead.conversation_result === 'Đã chốt đơn';
+
+      if (isClosed) {
+        standardBox.classList.add('hidden');
+        orderCard.classList.remove('hidden');
+
+        const curr = projectMeta.currency || 'RM';
+        const info = extractOrderShipping(lead);
+        activeOrderData = { ...info, currency: curr, tid: lead.tid, customer_name: lead.customer_name };
+
+        document.getElementById('orderCardCombo').innerText = info.combo;
+        document.getElementById('orderCardAmount').innerText = `${curr} ${Number(info.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        document.getElementById('orderCardRecipient').innerText = info.recipient;
+        document.getElementById('orderCardPhone').innerText = info.phone;
+        document.getElementById('orderCardAddress').innerText = info.address;
+      } else {
+        orderCard.classList.add('hidden');
+        standardBox.classList.remove('hidden');
+
+        document.getElementById('drawerAdId').innerText = lead.ad_id || 'Organic / Direct';
+        document.getElementById('drawerStatusBadge').innerHTML = getStatusBadge(lead.conversation_result);
+        document.getElementById('drawerIntent').innerText = lead.main_intent || 'Hỏi thông tin';
+        document.getElementById('drawerDropoff').innerText = lead.dropoff_reason || '—';
+      }
+
+      // WhatsApp Chat View
+      const chatContainer = document.getElementById('drawerChatMessages');
+      chatContainer.innerHTML = '';
+
+      let transcript = [];
+      try {
+        transcript = typeof lead.raw_transcript === 'string' ? JSON.parse(lead.raw_transcript) : (lead.raw_transcript || []);
+      } catch (e) {
+        transcript = [];
+      }
+
+      if (transcript.length === 0) {
+        chatContainer.innerHTML = '<div class="text-center py-10 text-xs text-slate-400">Không có lịch sử tin nhắn</div>';
+      } else {
+        transcript.forEach(m => {
+          const isCustomer = m.role === 'customer';
+          const time = m.time ? new Date(m.time).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '';
+
+          const div = document.createElement('div');
+          div.className = `flex flex-col ${isCustomer ? 'items-start' : 'items-end'}`;
+          div.innerHTML = `
+            <div class="max-w-[85%] rounded-2xl px-3.5 py-2 text-xs shadow-sm ${
+              isCustomer ? 'bg-white text-slate-800 rounded-tl-sm' : 'bg-[#dcf8c6] text-slate-900 rounded-tr-sm'
+            }">
+              <div class="font-semibold text-[10px] text-slate-400 mb-0.5">${m.sender || (isCustomer ? 'Khách hàng' : 'AI Assistant')}</div>
+              <p class="whitespace-pre-wrap leading-relaxed">${escapeHtml(m.text)}</p>
+              <div class="text-[9px] text-slate-400 text-right mt-1">${time}</div>
+            </div>
+          `;
+          chatContainer.appendChild(div);
+        });
+      }
+
+      document.getElementById('chatDrawer').classList.remove('hidden');
+    }
+
+    function copyFullOrderInfo() {
+      if (!activeOrderData) return;
+      const text = [
+        `--- ĐƠN HÀNG ${projectMeta.name || PROJECT_ID.toUpperCase()} ---`,
+        `👤 Người nhận: ${activeOrderData.recipient}`,
+        `📞 Số điện thoại: ${activeOrderData.phone}`,
+        `📍 Địa chỉ giao hàng: ${activeOrderData.address}`,
+        `📦 Sản phẩm: ${activeOrderData.combo}`,
+        `💰 Tổng tiền thu hộ COD: ${activeOrderData.currency} ${Number(activeOrderData.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`,
+        `🚚 Vận chuyển: Giao hàng COD Free Shipping`,
+        `⚡ Ghi chú: Giao giờ hành chính, gọi trước khi giao`
+      ].join('\n');
+
+      navigator.clipboard.writeText(text).then(() => {
+        showToast('Đã sao chép toàn bộ thông tin đơn hàng!');
+      }).catch(err => {
+        prompt('Sao chép đơn hàng:', text);
+      });
+    }
+
+    function showToast(message) {
+      let toast = document.getElementById('toastNotice');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toastNotice';
+        toast.className = 'fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-4 py-2.5 rounded-xl shadow-xl text-xs font-semibold flex items-center gap-2 transition-all duration-300 opacity-0 translate-y-2';
+        document.body.appendChild(toast);
+      }
+      toast.innerHTML = `<span>✅</span> <span>${message}</span>`;
+      toast.classList.remove('opacity-0', 'translate-y-2');
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-y-2');
+      }, 2500);
+    }
+
+    function closeChatDrawer() {
+      document.getElementById('chatDrawer').classList.add('hidden');
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function handlePinSubmit(e) {
+      e.preventDefault();
+      const val = document.getElementById('inputPin').value.trim();
+      if (!val) return;
+      currentPin = val;
+      localStorage.setItem(`crm_pin_${PROJECT_ID}`, val);
+      document.getElementById('pinModal').classList.add('hidden');
+      loadData(true);
+    }
+
+    function logoutPin() {
+      localStorage.removeItem(`crm_pin_${PROJECT_ID}`);
+      document.getElementById('inputPin').value = '';
+      document.getElementById('pinModal').classList.remove('hidden');
+    }
+
+    function exportToCSV() {
+      if (allLeads.length === 0) {
+        alert('Không có dữ liệu để xuất.');
+        return;
+      }
+      const headers = [
+        'STT', 'Tên Khách Hàng', 'Số Điện Thoại', 'TID', 'Mã Ads', 'Phễu 7 Bước',
+        'Tổng Số Tin', 'Số Tin KH Gửi', 'Nhu Cầu Chính', 'Kết Quả',
+        'Combo Đặt', 'Doanh Thu', 'Thông Tin Chốt Đơn', 'Điểm Nghẽn Rớt',
+        'Lần Đầu Nhắn Tin', 'Lần Nhắn Cuối Cùng'
+      ];
+
+      const rows = allLeads.map((l, idx) => [
+        idx + 1,
+        `"${(l.customer_name || '').replace(/"/g, '""')}"`,
+        `"'${l.phone || ''}"`,
+        `"${l.tid || ''}"`,
+        `"'${l.ad_id || ''}"`,
+        `"${l.funnel_step || ''}"`,
+        l.total_messages,
+        l.customer_messages,
+        `"${(l.main_intent || '').replace(/"/g, '""')}"`,
+        `"${l.conversation_result || ''}"`,
+        `"${l.order_combo || ''}"`,
+        l.order_amount || 0,
+        `"${(l.order_details || '').replace(/"/g, '""')}"`,
+        `"${(l.dropoff_reason || '').replace(/"/g, '""')}"`,
+        `"${l.first_msg_at || ''}"`,
+        `"${l.last_msg_at || ''}"`
+      ]);
+
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\r\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${PROJECT_ID}_WhatsApp_CRM_${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    async function runBotApiTagging() {
+      const btn = document.getElementById('btnTriggerBotApi');
+      const oldHtml = btn.innerHTML;
+      btn.innerHTML = '<span class="inline-block animate-spin mr-1">⚡</span> Đang quét...';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch(`/api/botapi-tagger?project_id=${PROJECT_ID}`);
+        const json = await res.json();
+        if (json.success) {
+          const runSuccess = json.taggedThisRun?.success || 0;
+          const runDemand = json.taggedThisRun?.demand || 0;
+          const totalSuccess = json.cumulativeTaggedInDb?.totalSuccess || 0;
+          const totalDemand = json.cumulativeTaggedInDb?.totalDemand || 0;
+          
+          let msg = `Đã đồng bộ BotAPI Smax! `;
+          if (runSuccess > 0 || runDemand > 0) {
+            msg += `Gắn mới ${runSuccess} tag Thành công, ${runDemand} tag Có nhu cầu. `;
+          } else {
+            msg += `Không có hội thoại mới cần gắn (Đã có ${totalSuccess} Thành công, ${totalDemand} Có nhu cầu). `;
+          }
+          showToast(msg);
+          loadData(false);
+        } else {
+          alert(json.error || 'Lỗi xử lý BotAPI');
+        }
+      } catch (e) {
+        console.error('BotAPI call error:', e);
+        alert('Không thể kết nối đến BotAPI Vercel.');
+      } finally {
+        btn.innerHTML = oldHtml;
+        btn.disabled = false;
+      }
+    }
+
+    // Auto-load on page load & setup background sync
+    window.addEventListener('DOMContentLoaded', () => {
+      loadData();
+
+      // Background periodic auto-sync every 3 minutes when page is active
+      setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          manualSync();
+        }
+      }, 3 * 60 * 1000);
+    });
+  </script>
+</body>
+</html>

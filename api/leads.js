@@ -267,37 +267,93 @@ module.exports = async (req, res) => {
       ORDER BY COALESCE(a.total_spend, 0) DESC, COALESCE(l.total_leads, 0) DESC;
     `, [projectId]);
 
-    let totalSpend = 0;
-    let totalAdRevenue = 0;
+    const adsCurrency = project.ads_currency || 'VND';
+    const revCurrency = project.revenue_currency || project.currency || 'RM';
+    const rateAdsToVnd = parseFloat(project.rate_ads_to_vnd) || 1.0;
+    const rateRevToVnd = parseFloat(project.rate_rev_to_vnd) || 5900.0;
+
+    let totalSpendRaw = 0;
+    let totalAdRevenueRaw = 0;
+    let totalSpendVnd = 0;
+    let totalAdRevenueVnd = 0;
     let totalAdOrders = 0;
     let totalAdLeads = 0;
     let totalImpressions = 0;
     let totalClicks = 0;
 
     const adsStats = adsRes.rows.map(ad => {
-      totalSpend += ad.spend || 0;
-      totalAdRevenue += ad.revenue || 0;
+      const spendRaw = parseFloat(ad.spend) || 0;
+      const revRaw = parseFloat(ad.revenue) || 0;
+
+      const spendVnd = Math.round(spendRaw * rateAdsToVnd);
+      const revVnd = Math.round(revRaw * rateRevToVnd);
+
+      totalSpendRaw += spendRaw;
+      totalAdRevenueRaw += revRaw;
+      totalSpendVnd += spendVnd;
+      totalAdRevenueVnd += revVnd;
+
       totalAdOrders += ad.closed_orders || 0;
       totalAdLeads += ad.total_leads || 0;
       totalImpressions += parseInt(ad.impressions || 0, 10);
       totalClicks += parseInt(ad.clicks || 0, 10);
-      return ad;
+
+      // Normalized calculations in VND
+      const roasVnd = spendVnd > 0 ? parseFloat((revVnd / spendVnd).toFixed(2)) : 0;
+      const cpaVnd = ad.closed_orders > 0 ? Math.round(spendVnd / ad.closed_orders) : 0;
+      const cplVnd = ad.total_leads > 0 ? Math.round(spendVnd / ad.total_leads) : 0;
+
+      return {
+        ...ad,
+        spend_raw: spendRaw,
+        revenue_raw: revRaw,
+        spend_vnd: spendVnd,
+        revenue_vnd: revVnd,
+        roas_vnd: roasVnd,
+        cost_per_order_vnd: cpaVnd,
+        cost_per_lead_vnd: cplVnd,
+        // Standard unified fields
+        spend: spendVnd,
+        revenue: revVnd,
+        roas: roasVnd,
+        cost_per_order: cpaVnd,
+        cost_per_lead: cplVnd
+      };
     });
 
     const adsOverview = {
-      totalSpend: Math.round(totalSpend * 100) / 100,
-      totalRevenue: Math.round(totalAdRevenue * 100) / 100,
-      blendedRoas: totalSpend > 0 ? (totalAdRevenue / totalSpend).toFixed(2) : '0.00',
+      // Unified metrics (VNĐ)
+      totalSpend: totalSpendVnd,
+      totalRevenue: totalAdRevenueVnd,
+      blendedRoas: totalSpendVnd > 0 ? (totalAdRevenueVnd / totalSpendVnd).toFixed(2) : '0.00',
       totalOrders: totalAdOrders,
-      blendedCpa: totalAdOrders > 0 ? (totalSpend / totalAdOrders).toFixed(2) : '0.00',
+      blendedCpa: totalAdOrders > 0 ? Math.round(totalSpendVnd / totalAdOrders) : 0,
       totalLeads: totalAdLeads,
-      blendedCpl: totalAdLeads > 0 ? (totalSpend / totalAdLeads).toFixed(2) : '0.00',
+      blendedCpl: totalAdLeads > 0 ? Math.round(totalSpendVnd / totalAdLeads) : 0,
+
+      // Raw metrics
+      totalSpendRaw: Math.round(totalSpendRaw * 100) / 100,
+      totalRevenueRaw: Math.round(totalAdRevenueRaw * 100) / 100,
+      adsCurrency: adsCurrency,
+      revenueCurrency: revCurrency,
+
       totalImpressions,
       totalClicks,
       avgCtr: totalImpressions > 0 ? ((totalClicks / totalImpressions) * 100).toFixed(2) : '0.00',
-      avgCpc: totalClicks > 0 ? (totalSpend / totalClicks).toFixed(2) : '0.00',
-      avgCpm: totalImpressions > 0 ? ((totalSpend / totalImpressions) * 1000).toFixed(2) : '0.00',
-      activeAdsCount: adsStats.filter(a => a.ad_id !== 'Organic / Direct').length
+      avgCpc: totalClicks > 0 ? Math.round(totalSpendVnd / totalClicks) : 0,
+      avgCpm: totalImpressions > 0 ? Math.round((totalSpendVnd / totalImpressions) * 1000) : 0,
+      activeAdsCount: adsStats.filter(a => a.ad_id !== 'Organic / Direct').length,
+
+      // Currency sync metadata
+      currencySync: {
+        adsCurrency: adsCurrency,
+        revenueCurrency: revCurrency,
+        targetCurrency: 'VND',
+        rateAdsToVnd: rateAdsToVnd,
+        rateRevToVnd: rateRevToVnd,
+        syncedAt: project.currency_synced_at,
+        note: project.currency_sync_note || `1 ${revCurrency} ≈ ${rateRevToVnd.toLocaleString()} ₫ | 1 ${adsCurrency} = ${rateAdsToVnd.toLocaleString()} ₫`
+      }
     };
 
     // 6. Fetch Leads list with optional filters and flexible sorting
@@ -371,7 +427,13 @@ module.exports = async (req, res) => {
         name: project.name,
         currency: project.currency,
         smax_biz: project.smax_biz,
-        smax_page_pid: project.smax_page_pid
+        smax_page_pid: project.smax_page_pid,
+        ads_currency: adsCurrency,
+        revenue_currency: revCurrency,
+        rate_ads_to_vnd: rateAdsToVnd,
+        rate_rev_to_vnd: rateRevToVnd,
+        currency_synced_at: project.currency_synced_at,
+        currency_sync_note: project.currency_sync_note
       },
       kpi: {
         totalLeads: parseInt(kpi.total_leads, 10),

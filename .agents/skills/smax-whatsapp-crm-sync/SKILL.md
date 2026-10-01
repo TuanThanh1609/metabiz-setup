@@ -16,13 +16,14 @@ description: |
   - "token.ai smax", "openai sdk smax", "phân tích hội thoại smax bằng ai", "gpt-5 smax"
   - "đồng bộ quảng cáo smax", "meta ads smax", "hứng dữ liệu quảng cáo smax", "báo cáo ads campaign"
   - "roas crm smax", "meta_ads_insights", "smax api connector ads", "bảng quảng cáo neon"
+  - "đồng bộ tiền tệ smax", "chuẩn hóa roas vnd", "currency sync smax", "tỷ giá token ai smax"
 ---
 
 # Smax WhatsApp Livechat & Meta Ads to Vercel/Neon Mini-CRM & AI Automation
 
 ## 1. Goal
 
-Thay thế 100% luồng Google Sheet & Google Apps Script bằng **hệ thống Mini-CRM độc lập, tốc độ cao trên Vercel Serverless Functions + Neon Serverless Postgres**, tích hợp **AI Server Token.ai (GPT-5)** phân tích ngữ nghĩa sâu hội thoại WhatsApp và **đồng bộ dữ liệu Meta Ads Insights (19 cột)** từ Smax API Connector.
+Thay thế 100% luồng Google Sheet & Google Apps Script bằng **hệ thống Mini-CRM độc lập, tốc độ cao trên Vercel Serverless Functions + Neon Serverless Postgres**, tích hợp **AI Server Token.ai (GPT-5)** phân tích ngữ nghĩa sâu hội thoại WhatsApp, **đồng bộ dữ liệu Meta Ads Insights (19 cột)** từ Smax API Connector, và **chuẩn hóa tiền tệ đa quốc gia về VNĐ** để tính ROAS chính xác.
 
 Hệ thống cung cấp:
 1. **Zero Quota Limits**: Lưu trữ không giới hạn hội thoại và bản ghi quảng cáo trên Postgres, loại bỏ hoàn toàn giới hạn 500KB và 6 phút timeout của Google Apps Script.
@@ -32,8 +33,9 @@ Hệ thống cung cấp:
 5. **Phễu Chuyển Đổi 7 Bước (/whatsapp-funnel-engine)**: Tự động phân loại từng hội thoại vào 7 nấc phễu và chẩn đoán điểm nghẽn (bottlenecks).
 6. **Đồng Bộ Dữ Liệu Báo Cáo Meta Ads (19 Cột Chuẩn)**: Tiếp nhận dữ liệu Meta Ads Insights từ Smax API Connector qua endpoint Vercel Webhook (`api/ads-webhook.js`), lưu trữ vào bảng `meta_ads_insights`.
 7. **Đối Soát Quảng Cáo & Hội Thoại Toàn Diện (Attribution Join)**: Tự động `FULL OUTER JOIN` giữa bảng `leads` và `meta_ads_insights` theo `ad_id` để đo lường chính xác **ROAS, Blended CPA, CPL** và phát hiện các mẫu quảng cáo chuyển đổi cao (Top Converters) hoặc chi tiêu nhiều mà không ra đơn.
-8. **Cơ Chế Đồng Bộ 3 Tầng Dự Phòng (Triple Redundancy)**: Tự động quét 15 phút/lần 24/7 bằng GitHub Actions, quét ngầm 3 phút/lần khi mở trình duyệt, và hỗ trợ quét tức thì.
-9. **Dual BotAPI Gắn Tag Chống Trùng Lặp 3 Tầng (Strict Idempotency)**: Gắn tag `"Thành công"` và `"Có nhu cầu"` trên Smax chỉ đúng 1 lần duy nhất.
+8. **Chuẩn Hóa Tiền Tệ Đa Quốc Gia Về VNĐ Bằng Token.ai (3 Bước)**: Xóa bỏ sự lệch pha giữa tiền tài khoản Ads (VND, USD) và tiền thu COD thị trường (RM, IDR, THB). Tự động lấy tỷ giá thị trường thực tế qua Token.ai GPT-5 để quy đổi đồng bộ và tính toán ROAS, CPA, CPL chuẩn xác 100%.
+9. **Cơ Chế Đồng Bộ 3 Tầng Dự Phòng (Triple Redundancy)**: Tự động quét 15 phút/lần 24/7 bằng GitHub Actions, quét ngầm 3 phút/lần khi mở trình duyệt, và hỗ trợ quét tức thì.
+10. **Dual BotAPI Gắn Tag Chống Trùng Lặp 3 Tầng (Strict Idempotency)**: Gắn tag `"Thành công"` và `"Có nhu cầu"` trên Smax chỉ đúng 1 lần duy nhất.
 
 ---
 
@@ -243,6 +245,11 @@ Sử dụng file template `src/crm.html` với kiến trúc 3 tab chính trên S
    - Khung cảnh báo **Điểm Nghẽn AI Phát Hiện**: Nêu rõ giai đoạn có tỷ lệ rớt khách cao nhất (ví dụ: Bước 4 Báo giá) kèm 2 hộp giải pháp khắc phục kịch bản.
 
 3. **Tab 3: Báo Cáo Theo Ads Campaign & ROAS**:
+   - **Khu Vực Đồng Bộ Tiền Tệ 3 Bước (Token.ai GPT-5 Engine)**:
+     - Bước 1: Chọn đồng tiền tài khoản Ads (Spend: VND, USD, RM, IDR...).
+     - Bước 2: Chọn đồng tiền doanh thu CRM (Orders: RM, IDR, VND, USD...).
+     - Bước 3: Bấm nút "Đồng bộ về VNĐ" (gọi Token.ai AI Server tự động cập nhật tỷ giá thị trường và refresh hợp nhất toàn bộ dữ liệu về VNĐ để tính ROAS chính xác).
+     - Hỗ trợ công tắc xem: `[VNĐ (Chuẩn hóa)]` vs `[Gốc]`.
    - **Hộp Hướng Dẫn Smax API Connector**: Cung cấp URL Webhook kèm nút 1-click copy để dán vào Smax.
    - **4 Thẻ Executive KPI**: Tổng Chi Tiêu (Spend), Doanh Thu & ROAS, Blended CPA, Chi Phí Trên Mỗi Lead (CPL) & CPC.
    - **Khung Đề Xuất AI Tối Ưu Ngân Sách**: Phát hiện Top Converter có ROAS cao nhất và cảnh báo chiến dịch chi tiêu nhiều mà chưa ra đơn.
@@ -263,6 +270,7 @@ Cấu hình file `vercel.json`:
     "api/ai-analyze.js": { "maxDuration": 60 },
     "api/ads-webhook.js": { "maxDuration": 30 },
     "api/ads.js": { "maxDuration": 30 },
+    "api/currency-sync.js": { "maxDuration": 30 },
     "api/leads.js": { "maxDuration": 30 },
     "api/botapi-tagger.js": { "maxDuration": 30 }
   },
@@ -318,11 +326,12 @@ npx vercel --prod --yes
 ## 5. Tài Nguyên Đi Kèm (Resources)
 
 - [resources/neon-schema.sql](resources/neon-schema.sql): Cấu trúc database chuẩn Neon Postgres (projects, leads, meta_ads_insights, indexes và unique constraints).
+- [resources/currency-sync-setup.md](resources/currency-sync-setup.md): Hướng dẫn thiết lập đồng bộ tiền tệ đa quốc gia (Ads vs CRM) và chuẩn hóa ROAS về VNĐ qua Token.ai GPT-5.
 - [resources/smax-ads-connector-setup.md](resources/smax-ads-connector-setup.md): Hướng dẫn chi tiết thiết lập Smax API Connector đẩy 19 cột Meta Ads sang Mini-CRM.
 - [resources/ai-analysis-engine.py](resources/ai-analysis-engine.py): Module OpenAI SDK Python chuẩn kết nối tới Token.ai Server (`https://token.ai.vn/v1`, Model `gpt-5`).
 - [resources/funnel-7-steps-mapping.md](resources/funnel-7-steps-mapping.md): Định nghĩa và heuristics phân loại 7 bước phễu chuyển đổi.
 - [resources/botapi-tagging-rules.md](resources/botapi-tagging-rules.md): Cơ chế gắn thẻ BotAPI và 3 tầng chống trùng lặp.
 - [resources/github-cron-setup.md](resources/github-cron-setup.md): Hướng dẫn thiết lập GitHub Actions 15-phút cron chạy 24/7.
-- [examples/fitgum-complete-implementation.md](examples/fitgum-complete-implementation.md): Hồ sơ triển khai thực tế dự án Fitgum Malaysia (115 leads, 3 đơn chốt, 8 Ads, ROAS 3.11x, AI GPT-5).
+- [examples/fitgum-complete-implementation.md](examples/fitgum-complete-implementation.md): Hồ sơ triển khai thực tế dự án Fitgum Malaysia (115 leads, 3 đơn chốt, 8 Ads, ROAS 3.88x, AI GPT-5).
 
 <!-- Generated by Skill Creator Ultra v2.0 (Meta Ads & Token.ai GPT-5 Edition) -->

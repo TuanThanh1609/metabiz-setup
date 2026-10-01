@@ -455,7 +455,7 @@
         <div class="bg-white rounded-2xl p-5 sm:p-6 shadow-sm border border-slate-200">
           <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
             <div>
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
                   Meta Click-to-WhatsApp Attribution &amp; Spend Engine
                 </span>
@@ -469,20 +469,146 @@
               </p>
             </div>
 
-            <!-- Smax Connector Webhook Quick Box -->
-            <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-3.5 border border-emerald-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
-              <div>
-                <div class="font-bold text-emerald-900 flex items-center gap-1.5">
-                  <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
-                  <span>URL Hứng Dữ Liệu Quảng Cáo Smax (API Connector):</span>
+            <!-- Header Quick Actions: Đồng Bộ Tiền Tệ & Smax Connector -->
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+              <!-- Nút Đồng Bộ Tiền Tệ (3 Bước) -->
+              <button onclick="toggleCurrencySetupBox()" id="btnOpenCurrencySetup" class="px-3.5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold text-xs transition shadow-md shadow-amber-500/20 flex items-center justify-center gap-2 whitespace-nowrap">
+                <span>💱</span>
+                <span>Đồng Bộ Tiền Tệ</span>
+                <span class="px-1.5 py-0.5 rounded bg-black/20 text-[10px] font-mono" id="currencyBadgeHeader">VNĐ</span>
+              </button>
+
+              <!-- Smax Connector Webhook Quick Box -->
+              <div class="bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl p-2.5 sm:p-3 border border-emerald-200/80 flex items-center justify-between gap-2.5 text-xs">
+                <div>
+                  <div class="font-bold text-emerald-900 flex items-center gap-1.5 text-[11px]">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+                    <span>Webhook Smax Ads:</span>
+                  </div>
+                  <div class="font-mono text-[10px] text-emerald-800 bg-white/80 px-2 py-0.5 rounded border border-emerald-200 mt-0.5 select-all truncate max-w-[190px]" id="adsWebhookUrlDisplay">
+                    https://metabizai-smax.vercel.app/api/ads-webhook?project_id=fitgum
+                  </div>
                 </div>
-                <div class="font-mono text-[11px] text-emerald-800 bg-white/80 px-2 py-1 rounded border border-emerald-200 mt-1 select-all" id="adsWebhookUrlDisplay">
-                  https://metabizai-smax.vercel.app/api/ads-webhook?project_id=fitgum
+                <button onclick="copyAdsWebhookUrl()" class="px-2.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition flex items-center gap-1 shadow-sm whitespace-nowrap text-xs">
+                  <span>📋</span> <span>Copy</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KHU VỰC SETUP ĐỒNG BỘ ĐƠN VỊ TIỀN TỆ GIỮA ADS & CRM (3 BƯỚC) -->
+        <div id="currencySetupBox" class="bg-gradient-to-br from-amber-50/90 via-orange-50/50 to-amber-100/40 rounded-2xl p-5 sm:p-6 border-2 border-amber-300/80 shadow-md space-y-4">
+          <div class="flex items-start justify-between flex-wrap gap-3 pb-3 border-b border-amber-200">
+            <div class="flex items-center gap-3">
+              <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-orange-500 text-white flex items-center justify-center font-bold text-xl shadow-md shadow-orange-500/20">
+                💱
+              </div>
+              <div>
+                <h3 class="font-black text-slate-900 text-base sm:text-lg flex items-center gap-2">
+                  <span>Thiết Lập Đồng Bộ Tiền Tệ &amp; Chuẩn Hóa ROAS Về VNĐ</span>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-200 text-amber-900 border border-amber-300">Token.ai GPT-5 Engine</span>
+                </h3>
+                <p class="text-xs text-slate-600 mt-0.5">
+                  Đồng bộ đơn vị tiền giữa tài khoản Ads (VND, $, ...) và doanh thu CRM (RM, Indo, ...) để tính toán ROAS và CPA chính xác tuyệt đối.
+                </p>
+              </div>
+            </div>
+
+            <!-- Current Rate Badge -->
+            <div class="flex items-center gap-2">
+              <div class="bg-white/95 px-3 py-1.5 rounded-xl border border-amber-300 text-xs text-slate-700 font-medium shadow-sm flex items-center gap-1.5" id="currentCurrencyStatusBanner">
+                <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                <span id="currentCurrencyNoteText">1 RM ≈ 5,900 ₫ | 1 VND = 1 ₫ (Token.ai GPT-5)</span>
+              </div>
+              <button onclick="toggleCurrencySetupBox()" class="p-1.5 rounded-lg bg-amber-200/70 hover:bg-amber-300 text-amber-900 transition text-xs font-bold" title="Ẩn bảng thiết lập">
+                ✕
+              </button>
+            </div>
+          </div>
+
+          <!-- 3-STEP SETUP WORKFLOW -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- BƯỚC 1: Chọn Tài Khoản Ads là đơn vị tiền nào -->
+            <div class="bg-white rounded-xl p-4 border border-amber-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center gap-2 text-xs font-bold text-amber-800 uppercase tracking-wide">
+                  <span class="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[11px] font-black">1</span>
+                  <span>Tiền Tài Khoản Ads (Spend)</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1">
+                  Đơn vị tiền tệ bị trừ trên Meta/Facebook Ads:
+                </p>
+                <div class="mt-3">
+                  <select id="selectAdsCurrency" class="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    <option value="VND">🇻🇳 VND - Việt Nam Đồng (₫)</option>
+                    <option value="USD">🇺🇸 USD - Đô La Mỹ ($)</option>
+                    <option value="RM">🇲🇾 RM - Ringgit Malaysia (RM)</option>
+                    <option value="IDR">🇮🇩 IDR - Rupiah Indonesia (Rp)</option>
+                    <option value="THB">🇹🇭 THB - Baht Thái Lan (฿)</option>
+                    <option value="SGD">🇸🇬 SGD - Singapore Dollar (S$)</option>
+                    <option value="PHP">🇵🇭 PHP - Peso Philippines (₱)</option>
+                  </select>
                 </div>
               </div>
-              <button onclick="copyAdsWebhookUrl()" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold transition flex items-center gap-1.5 shadow-sm whitespace-nowrap">
-                <span>📋</span> <span>Copy URL Smax</span>
-              </button>
+              <div class="mt-3 text-[10px] text-slate-400 italic">
+                *Ví dụ Fitgum: Tài khoản Ads chạy tiền VNĐ
+              </div>
+            </div>
+
+            <!-- BƯỚC 2: Chọn Doanh thu là đơn vị tiền nào -->
+            <div class="bg-white rounded-xl p-4 border border-amber-200 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center gap-2 text-xs font-bold text-amber-800 uppercase tracking-wide">
+                  <span class="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center text-[11px] font-black">2</span>
+                  <span>Tiền Doanh Thu CRM (Orders)</span>
+                </div>
+                <p class="text-[11px] text-slate-500 mt-1">
+                  Đơn vị tiền tệ thu hộ COD chốt đơn khách hàng:
+                </p>
+                <div class="mt-3">
+                  <select id="selectRevCurrency" class="w-full text-xs font-bold bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+                    <option value="RM">🇲🇾 RM - Ringgit Malaysia (RM)</option>
+                    <option value="IDR">🇮🇩 IDR - Rupiah Indonesia (Rp)</option>
+                    <option value="VND">🇻🇳 VND - Việt Nam Đồng (₫)</option>
+                    <option value="USD">🇺🇸 USD - Đô La Mỹ ($)</option>
+                    <option value="THB">🇹🇭 THB - Baht Thái Lan (฿)</option>
+                    <option value="SGD">🇸🇬 SGD - Singapore Dollar (S$)</option>
+                    <option value="PHP">🇵🇭 PHP - Peso Philippines (₱)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mt-3 text-[10px] text-slate-400 italic">
+                *Ví dụ Fitgum: Chốt đơn COD bằng RM
+              </div>
+            </div>
+
+            <!-- BƯỚC 3: Bấm nút Đồng bộ về VNĐ qua Token.ai -->
+            <div class="bg-gradient-to-br from-white to-amber-50/60 rounded-xl p-4 border-2 border-dashed border-amber-300 shadow-sm flex flex-col justify-between">
+              <div>
+                <div class="flex items-center gap-2 text-xs font-bold text-amber-800 uppercase tracking-wide">
+                  <span class="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[11px] font-black">3</span>
+                  <span>Quy Đổi &amp; Hợp Nhất VNĐ</span>
+                </div>
+                <p class="text-[11px] text-slate-600 mt-1">
+                  Sử dụng AI <strong>Token.ai (GPT-5)</strong> lấy tỷ giá thị trường thực tế và refresh toàn bộ bảng về VNĐ.
+                </p>
+              </div>
+
+              <div class="mt-3 space-y-2">
+                <button onclick="triggerCurrencySyncToVnd()" id="btnSyncToVnd" class="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-700 hover:to-teal-700 text-white font-black text-xs transition shadow-md shadow-emerald-600/25 flex items-center justify-center gap-2">
+                  <span>🪄</span>
+                  <span id="btnSyncToVndText">Đồng bộ về VNĐ (Tỷ giá Token.ai AI)</span>
+                </button>
+
+                <div class="flex items-center justify-between text-[11px] text-slate-500 pt-1">
+                  <span>Chế độ xem bảng:</span>
+                  <div class="inline-flex rounded-lg border border-slate-200 bg-white p-0.5 text-xs">
+                    <button onclick="toggleCurrencyDisplayMode('vnd')" id="btnDisplayVnd" class="px-2 py-0.5 rounded font-bold transition bg-emerald-600 text-white">VNĐ</button>
+                    <button onclick="toggleCurrencyDisplayMode('raw')" id="btnDisplayRaw" class="px-2 py-0.5 rounded font-bold transition text-slate-600 hover:text-slate-900">Gốc</button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -497,8 +623,9 @@
             </div>
             <div class="mt-2 flex items-baseline gap-2">
               <span class="text-2xl sm:text-3xl font-extrabold text-slate-900" id="adsKpiSpend">0</span>
-              <span class="text-xs font-semibold text-slate-500" id="adsKpiSpendCurrency">RM</span>
+              <span class="text-xs font-semibold text-slate-500" id="adsKpiSpendCurrency">₫</span>
             </div>
+            <div class="text-[10px] text-slate-400 mt-0.5" id="adsKpiSpendSub">Gốc: 0 VND</div>
             <div class="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5 flex-wrap">
               <span id="adsKpiImpressions">0</span> views • <span id="adsKpiClicks">0</span> clicks • CTR: <strong class="text-purple-700 font-bold" id="adsKpiCtr">0%</strong>
             </div>
@@ -512,8 +639,9 @@
             </div>
             <div class="mt-2 flex items-baseline gap-2">
               <span class="text-2xl sm:text-3xl font-extrabold text-emerald-700" id="adsKpiRevenue">0</span>
-              <span class="text-xs font-semibold text-emerald-600" id="adsKpiRevCurrency">RM</span>
+              <span class="text-xs font-semibold text-emerald-600" id="adsKpiRevCurrency">₫</span>
             </div>
+            <div class="text-[10px] text-emerald-600/80 mt-0.5" id="adsKpiRevenueSub">Gốc: 0 RM</div>
             <div class="mt-2 text-[11px] text-emerald-700 font-medium">
               Từ các đơn COD chốt thành công qua quảng cáo
             </div>
@@ -527,7 +655,7 @@
             </div>
             <div class="mt-2 flex items-baseline gap-2">
               <span class="text-2xl sm:text-3xl font-extrabold text-slate-900" id="adsKpiCpa">0</span>
-              <span class="text-xs font-semibold text-slate-500" id="adsKpiCpaCurrency">RM / đơn</span>
+              <span class="text-xs font-semibold text-slate-500" id="adsKpiCpaCurrency">₫ / đơn</span>
             </div>
             <div class="mt-2 text-[11px] text-slate-500">
               <strong class="text-slate-800" id="adsKpiOrders">0</strong> đơn hàng COD đã hoàn tất
@@ -542,10 +670,10 @@
             </div>
             <div class="mt-2 flex items-baseline gap-2">
               <span class="text-2xl sm:text-3xl font-extrabold text-slate-900" id="adsKpiCpl">0</span>
-              <span class="text-xs font-semibold text-slate-500" id="adsKpiCplCurrency">RM / lead</span>
+              <span class="text-xs font-semibold text-slate-500" id="adsKpiCplCurrency">₫ / lead</span>
             </div>
             <div class="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5 flex-wrap">
-              CPC: <strong class="text-slate-700" id="adsKpiCpc">RM 0</strong> • CPM: <strong class="text-slate-700" id="adsKpiCpm">RM 0</strong>
+              CPC: <strong class="text-slate-700" id="adsKpiCpc">0 ₫</strong> • CPM: <strong class="text-slate-700" id="adsKpiCpm">0 ₫</strong>
             </div>
           </div>
         </div>
@@ -593,14 +721,14 @@
                 <tr>
                   <th class="py-3 px-4">Mã &amp; Tên Quảng Cáo</th>
                   <th class="py-3 px-3">Chiến Dịch &amp; Nhóm</th>
-                  <th class="py-3 px-3 text-right">Chi Phí (Spend)</th>
+                  <th class="py-3 px-3 text-right" id="thAdsSpend">Chi Phí (Spend)</th>
                   <th class="py-3 px-3 text-center">Hiển Thị / Click</th>
                   <th class="py-3 px-3 text-center">Khách WhatsApp</th>
                   <th class="py-3 px-3 text-center">% Nhu Cầu</th>
                   <th class="py-3 px-3 text-center">Đơn Chốt (COD)</th>
-                  <th class="py-3 px-3 text-right">Doanh Thu</th>
-                  <th class="py-3 px-3 text-right">CPA (RM/đơn)</th>
-                  <th class="py-3 px-3 text-right">CPL (RM/lead)</th>
+                  <th class="py-3 px-3 text-right" id="thAdsRevenue">Doanh Thu</th>
+                  <th class="py-3 px-3 text-right" id="thAdsCpa">CPA (Chi phí/Đơn)</th>
+                  <th class="py-3 px-3 text-right" id="thAdsCpl">CPL (Chi phí/Lead)</th>
                   <th class="py-3 px-3 text-center">ROAS</th>
                   <th class="py-3 px-3">Đánh Giá</th>
                   <th class="py-3 px-4 text-right">Hành Động</th>
@@ -1152,9 +1280,74 @@
       }
     }
 
+    let currencyDisplayMode = 'vnd';
+
+    function toggleCurrencySetupBox() {
+      const box = document.getElementById('currencySetupBox');
+      if (box) {
+        box.classList.toggle('hidden');
+      }
+    }
+
+    function toggleCurrencyDisplayMode(mode) {
+      currencyDisplayMode = mode;
+      const btnVnd = document.getElementById('btnDisplayVnd');
+      const btnRaw = document.getElementById('btnDisplayRaw');
+      const badge = document.getElementById('currencyBadgeHeader');
+
+      if (mode === 'vnd') {
+        if (btnVnd) btnVnd.className = 'px-2 py-0.5 rounded font-bold transition bg-emerald-600 text-white';
+        if (btnRaw) btnRaw.className = 'px-2 py-0.5 rounded font-bold transition text-slate-600 hover:text-slate-900';
+        if (badge) badge.innerText = 'VNĐ';
+      } else {
+        if (btnRaw) btnRaw.className = 'px-2 py-0.5 rounded font-bold transition bg-slate-800 text-white';
+        if (btnVnd) btnVnd.className = 'px-2 py-0.5 rounded font-bold transition text-slate-600 hover:text-slate-900';
+        if (badge) badge.innerText = adsOverviewData?.adsCurrency || 'GỐC';
+      }
+      renderAdsView(adsData, adsOverviewData);
+    }
+
+    async function triggerCurrencySyncToVnd() {
+      const adsCurr = document.getElementById('selectAdsCurrency')?.value || 'VND';
+      const revCurr = document.getElementById('selectRevCurrency')?.value || 'RM';
+      const btn = document.getElementById('btnSyncToVnd');
+      const textElem = document.getElementById('btnSyncToVndText');
+
+      if (btn) btn.disabled = true;
+      if (textElem) textElem.innerHTML = '<span class="inline-block animate-spin mr-1">⏳</span> Đang gọi Token.ai GPT-5 lấy tỷ giá...';
+
+      try {
+        const res = await fetch(`/api/currency-sync?project_id=${PROJECT_ID}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            ads_currency: adsCurr,
+            revenue_currency: revCurr
+          })
+        });
+
+        const json = await res.json();
+        if (json.success) {
+          showToast(`Đã đồng bộ tỷ giá về VNĐ: ${json.note}`);
+          currencyDisplayMode = 'vnd';
+          await loadData(false);
+        } else {
+          alert(json.error || 'Lỗi khi đồng bộ tiền tệ');
+        }
+      } catch (err) {
+        console.error('Currency sync error:', err);
+        alert('Không thể kết nối đến máy chủ Token.ai để lấy tỷ giá.');
+      } finally {
+        if (btn) btn.disabled = false;
+        if (textElem) textElem.innerText = 'Đồng bộ về VNĐ (Tỷ giá Token.ai AI)';
+      }
+    }
+
     // 4. Render Ads Campaign View
     function renderAdsView(ads, overview) {
       if (!ads) return;
+      adsOverviewData = overview || adsOverviewData || {};
+      const ov = adsOverviewData;
 
       // Update Webhook URL display dynamically
       const webhookDisplay = document.getElementById('adsWebhookUrlDisplay');
@@ -1162,21 +1355,52 @@
         webhookDisplay.innerText = `${window.location.origin}/api/ads-webhook?project_id=${PROJECT_ID}`;
       }
 
-      // Update Overview KPI Cards
-      const ov = overview || {};
-      const curr = projectMeta.currency || 'RM';
+      // Update currency dropdowns & note
+      const cSync = ov.currencySync || {};
+      const selectAds = document.getElementById('selectAdsCurrency');
+      const selectRev = document.getElementById('selectRevCurrency');
+      const noteBanner = document.getElementById('currentCurrencyNoteText');
+      const headerBadge = document.getElementById('currencyBadgeHeader');
 
+      if (selectAds && cSync.adsCurrency) selectAds.value = cSync.adsCurrency;
+      if (selectRev && cSync.revenueCurrency) selectRev.value = cSync.revenueCurrency;
+      if (noteBanner) noteBanner.innerText = cSync.note || `1 ${ov.revenueCurrency || 'RM'} ≈ ${(cSync.rateRevToVnd || 5900).toLocaleString()} ₫ | 1 ${ov.adsCurrency || 'VND'} = 1 ₫ (Token.ai GPT-5)`;
+      if (headerBadge) headerBadge.innerText = (currencyDisplayMode === 'vnd') ? 'VNĐ' : (ov.adsCurrency || 'GỐC');
+
+      const isVnd = (currencyDisplayMode === 'vnd');
+      const currSpend = isVnd ? '₫' : (ov.adsCurrency || 'VND');
+      const currRev = isVnd ? '₫' : (ov.revenueCurrency || projectMeta.currency || 'RM');
+
+      // 1. Total Spend
       if (document.getElementById('adsKpiSpend')) {
-        document.getElementById('adsKpiSpend').innerText = (ov.totalSpend || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        document.getElementById('adsKpiSpendCurrency').innerText = curr;
+        const valSpend = isVnd ? (ov.totalSpend || 0) : (ov.totalSpendRaw || 0);
+        document.getElementById('adsKpiSpend').innerText = valSpend.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        document.getElementById('adsKpiSpendCurrency').innerText = currSpend;
         document.getElementById('adsKpiImpressions').innerText = (ov.totalImpressions || 0).toLocaleString();
         document.getElementById('adsKpiClicks').innerText = (ov.totalClicks || 0).toLocaleString();
         document.getElementById('adsKpiCtr').innerText = `${ov.avgCtr || '0.00'}%`;
+        
+        const subSpend = document.getElementById('adsKpiSpendSub');
+        if (subSpend) {
+          subSpend.innerText = isVnd 
+            ? `Gốc: ${(ov.totalSpendRaw || 0).toLocaleString()} ${ov.adsCurrency || 'VND'}` 
+            : `Quy đổi: ${(ov.totalSpend || 0).toLocaleString()} ₫`;
+        }
       }
 
+      // 2. Total Revenue & ROAS
       if (document.getElementById('adsKpiRevenue')) {
-        document.getElementById('adsKpiRevenue').innerText = (ov.totalRevenue || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        document.getElementById('adsKpiRevCurrency').innerText = curr;
+        const valRev = isVnd ? (ov.totalRevenue || 0) : (ov.totalRevenueRaw || 0);
+        document.getElementById('adsKpiRevenue').innerText = valRev.toLocaleString(undefined, { maximumFractionDigits: 0 });
+        document.getElementById('adsKpiRevCurrency').innerText = currRev;
+
+        const subRev = document.getElementById('adsKpiRevenueSub');
+        if (subRev) {
+          subRev.innerText = isVnd 
+            ? `Gốc: ${(ov.totalRevenueRaw || 0).toLocaleString()} ${ov.revenueCurrency || projectMeta.currency || 'RM'}` 
+            : `Quy đổi: ${(ov.totalRevenue || 0).toLocaleString()} ₫`;
+        }
+
         const roasVal = parseFloat(ov.blendedRoas || 0);
         const roasBadge = document.getElementById('adsKpiRoasBadge');
         if (roasBadge) {
@@ -1191,30 +1415,36 @@
         }
       }
 
+      // 3. CPA
       if (document.getElementById('adsKpiCpa')) {
-        document.getElementById('adsKpiCpa').innerText = ov.blendedCpa || '0.00';
-        document.getElementById('adsKpiCpaCurrency').innerText = `${curr} / đơn`;
+        const valCpa = isVnd ? (ov.blendedCpa || 0) : (ov.totalOrders > 0 ? (ov.totalSpendRaw / ov.totalOrders).toFixed(2) : 0);
+        document.getElementById('adsKpiCpa').innerText = typeof valCpa === 'number' ? valCpa.toLocaleString() : valCpa;
+        document.getElementById('adsKpiCpaCurrency').innerText = `${currSpend} / đơn`;
         document.getElementById('adsKpiOrders').innerText = ov.totalOrders || 0;
       }
 
+      // 4. CPL & CPC & CPM
       if (document.getElementById('adsKpiCpl')) {
-        document.getElementById('adsKpiCpl').innerText = ov.blendedCpl || '0.00';
-        document.getElementById('adsKpiCplCurrency').innerText = `${curr} / lead`;
-        document.getElementById('adsKpiCpc').innerText = `${curr} ${ov.avgCpc || '0.00'}`;
-        document.getElementById('adsKpiCpm').innerText = `${curr} ${ov.avgCpm || '0.00'}`;
+        const valCpl = isVnd ? (ov.blendedCpl || 0) : (ov.totalLeads > 0 ? (ov.totalSpendRaw / ov.totalLeads).toFixed(2) : 0);
+        document.getElementById('adsKpiCpl').innerText = typeof valCpl === 'number' ? valCpl.toLocaleString() : valCpl;
+        document.getElementById('adsKpiCplCurrency').innerText = `${currSpend} / lead`;
+        document.getElementById('adsKpiCpc').innerText = `${isVnd ? (ov.avgCpc || 0).toLocaleString() : ov.avgCpc} ${currSpend}`;
+        document.getElementById('adsKpiCpm').innerText = `${isVnd ? (ov.avgCpm || 0).toLocaleString() : ov.avgCpm} ${currSpend}`;
       }
 
       // Smart Recommendation Banner
       const topAd = ads.find(a => (a.closed_orders > 0 || parseFloat(a.roas) > 0)) || ads[0] || {};
-      const highSpendZeroOrder = ads.find(a => (a.spend > 50 && a.closed_orders === 0 && a.total_leads >= 10));
+      const highSpendZeroOrder = ads.find(a => (a.spend > 50000 && a.closed_orders === 0 && a.total_leads >= 10));
       const recElem = document.getElementById('adsRecommendationText');
       if (recElem) {
         let recHtml = '';
         if (topAd && topAd.ad_id) {
-          recHtml += `🚀 <strong>Top Chốt Đơn</strong>: Mã Ad <span class="font-mono font-bold text-emerald-800">${topAd.ad_id}</span> (${topAd.ad_name || 'Quảng cáo'}) đạt ROAS <strong class="text-emerald-700">${topAd.roas || '0'}x</strong> với ${topAd.closed_orders} đơn COD (${curr} ${topAd.revenue}). Nên giữ ngân sách hoặc scale thêm.`;
+          const revDisplay = isVnd ? `${(topAd.revenue || 0).toLocaleString()} ₫` : `${topAd.revenue_raw} ${ov.revenueCurrency || 'RM'}`;
+          recHtml += `🚀 <strong>Top Chốt Đơn</strong>: Mã Ad <span class="font-mono font-bold text-emerald-800">${topAd.ad_id}</span> (${topAd.ad_name || 'Quảng cáo'}) đạt ROAS <strong class="text-emerald-700">${topAd.roas || '0'}x</strong> với ${topAd.closed_orders} đơn COD (${revDisplay}). Tỷ lệ hoàn vốn rất tốt, nên giữ và scale thêm ngân sách.`;
         }
         if (highSpendZeroOrder) {
-          recHtml += `<br class="my-1"/>⚠️ <strong>Cần Tối Ưu</strong>: Mã <span class="font-mono font-bold text-amber-800">${highSpendZeroOrder.ad_id}</span> đã tiêu ${curr} ${highSpendZeroOrder.spend} và mang về ${highSpendZeroOrder.total_leads} leads nhưng chưa có đơn. Đề xuất: Tối ưu lại kịch bản Bước 4 (Báo giá) và gửi ảnh review ở Bước 3 sớm hơn.`;
+          const spendDisplay = isVnd ? `${(highSpendZeroOrder.spend || 0).toLocaleString()} ₫` : `${highSpendZeroOrder.spend_raw} ${ov.adsCurrency || 'VND'}`;
+          recHtml += `<br class="my-1"/>⚠️ <strong>Cần Tối Ưu</strong>: Mã <span class="font-mono font-bold text-amber-800">${highSpendZeroOrder.ad_id}</span> đã tiêu ${spendDisplay} và mang về ${highSpendZeroOrder.total_leads} leads nhưng chưa có đơn. Đề xuất: Tối ưu lại kịch bản Bước 4 (Báo giá) và gửi ảnh review ở Bước 3 sớm hơn.`;
         }
         recElem.innerHTML = recHtml || 'Đang theo dõi hiệu quả các chiến dịch Meta Click-to-WhatsApp. Dữ liệu sẽ tự động cập nhật khi có tương tác mới.';
       }
@@ -1226,7 +1456,7 @@
 
     function renderAdsTableFiltered() {
       const search = (document.getElementById('adsSearchInput')?.value || '').toLowerCase().trim();
-      const curr = projectMeta.currency || 'RM';
+      const isVnd = (currencyDisplayMode === 'vnd');
       const tableBody = document.getElementById('adsTableBody');
       if (!tableBody) return;
       tableBody.innerHTML = '';
@@ -1274,6 +1504,11 @@
           tagEval = '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-rose-50 text-rose-700">Chưa có lead WhatsApp</span>';
         }
 
+        const spendDisplay = isVnd ? `${(ad.spend || 0).toLocaleString()} ₫` : `${(ad.spend_raw || 0).toLocaleString()} ${adsOverviewData?.adsCurrency || 'VND'}`;
+        const revDisplay = isVnd ? `${(ad.revenue || 0).toLocaleString()} ₫` : `${(ad.revenue_raw || 0).toLocaleString()} ${adsOverviewData?.revenueCurrency || 'RM'}`;
+        const cpaDisplay = ad.closed_orders > 0 ? (isVnd ? `${(ad.cost_per_order || 0).toLocaleString()} ₫` : `${(ad.spend_raw / ad.closed_orders).toFixed(2)} ${adsOverviewData?.adsCurrency || 'VND'}`) : '—';
+        const cplDisplay = ad.total_leads > 0 ? (isVnd ? `${(ad.cost_per_lead || 0).toLocaleString()} ₫` : `${(ad.spend_raw / ad.total_leads).toFixed(2)} ${adsOverviewData?.adsCurrency || 'VND'}`) : '—';
+
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-slate-50/80 transition';
         tr.innerHTML = `
@@ -1295,7 +1530,8 @@
             <div class="text-[10px] text-slate-400 max-w-[180px] truncate" title="${ad.adset_name || ''}">${ad.adset_name || ''}</div>
           </td>
           <td class="py-3 px-3 text-right font-mono font-bold text-slate-900 whitespace-nowrap">
-            ${curr} ${(ad.spend || 0).toFixed(2)}
+            <div>${spendDisplay}</div>
+            ${isVnd && ad.spend_raw && ad.spend_raw !== ad.spend ? `<div class="text-[10px] text-slate-400 font-normal">Gốc: ${(ad.spend_raw || 0).toLocaleString()} ${adsOverviewData?.adsCurrency || 'VND'}</div>` : ''}
           </td>
           <td class="py-3 px-3 text-center whitespace-nowrap">
             <div class="text-slate-800 font-medium">${(ad.clicks || 0).toLocaleString()} clicks</div>
@@ -1312,13 +1548,14 @@
             </span>
           </td>
           <td class="py-3 px-3 text-right font-mono font-bold text-emerald-700 whitespace-nowrap">
-            ${curr} ${(ad.revenue || 0).toFixed(2)}
+            <div>${revDisplay}</div>
+            ${isVnd && ad.revenue_raw ? `<div class="text-[10px] text-emerald-600/80 font-normal">Gốc: ${(ad.revenue_raw || 0).toLocaleString()} ${adsOverviewData?.revenueCurrency || 'RM'}</div>` : ''}
           </td>
           <td class="py-3 px-3 text-right font-mono text-slate-700 whitespace-nowrap">
-            ${ad.cost_per_order > 0 ? `${curr} ${ad.cost_per_order.toFixed(2)}` : '—'}
+            ${cpaDisplay}
           </td>
           <td class="py-3 px-3 text-right font-mono text-slate-700 whitespace-nowrap">
-            ${ad.cost_per_lead > 0 ? `${curr} ${ad.cost_per_lead.toFixed(2)}` : '—'}
+            ${cplDisplay}
           </td>
           <td class="py-3 px-3 text-center whitespace-nowrap">
             ${roasBadge}
@@ -1338,12 +1575,16 @@
       const ctx = document.getElementById('adsFinanceChart')?.getContext('2d');
       if (!ctx) return;
 
+      const isVnd = (currencyDisplayMode === 'vnd');
+      const currSpend = isVnd ? 'VNĐ' : (adsOverviewData?.adsCurrency || 'VND');
+      const currRev = isVnd ? 'VNĐ' : (adsOverviewData?.revenueCurrency || 'RM');
+
       const validAds = ads.filter(a => (a.spend > 0 || a.revenue > 0));
       const displayAds = validAds.length > 0 ? validAds : ads.slice(0, 6);
 
       const labels = displayAds.map(a => a.ad_name ? (a.ad_name.length > 15 ? a.ad_name.substring(0, 15) + '...' : a.ad_name) : (a.ad_id === 'Organic / Direct' ? 'Organic' : `Ad ${a.ad_id.slice(-6)}`));
-      const spendData = displayAds.map(a => a.spend || 0);
-      const revenueData = displayAds.map(a => a.revenue || 0);
+      const spendData = displayAds.map(a => isVnd ? (a.spend || 0) : (a.spend_raw || 0));
+      const revenueData = displayAds.map(a => isVnd ? (a.revenue || 0) : (a.revenue_raw || 0));
 
       if (adsFinanceChartInstance) adsFinanceChartInstance.destroy();
 
@@ -1353,13 +1594,13 @@
           labels: labels,
           datasets: [
             {
-              label: 'Chi Phí (Spend)',
+              label: `Chi Phí (${currSpend})`,
               data: spendData,
               backgroundColor: '#a855f7',
               borderRadius: 6
             },
             {
-              label: 'Doanh Thu (Revenue)',
+              label: `Doanh Thu (${currRev})`,
               data: revenueData,
               backgroundColor: '#10b981',
               borderRadius: 6

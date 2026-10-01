@@ -20,6 +20,13 @@ CREATE TABLE IF NOT EXISTS projects (
   ai_token TEXT DEFAULT 'sk-LEd49hmmEG9L4kB_aYYGhHHJirAsbtLkmyNReBe_yYgv3IRtAIhp8vJ_hjE',
   ai_model VARCHAR(50) DEFAULT 'gpt-5',
   ai_enabled BOOLEAN DEFAULT TRUE,
+  -- Currency Normalization & ROAS Synchronization (Token.ai Forex Engine)
+  ads_currency VARCHAR(10) DEFAULT 'VND',         -- Tiền tệ tài khoản Ads (e.g. 'VND', 'USD')
+  revenue_currency VARCHAR(10) DEFAULT 'RM',      -- Tiền tệ chốt đơn CRM (e.g. 'RM', 'IDR')
+  rate_ads_to_vnd NUMERIC(15, 6) DEFAULT 1.0,     -- Tỷ giá quy đổi Ads sang VNĐ
+  rate_rev_to_vnd NUMERIC(15, 6) DEFAULT 5900.0,  -- Tỷ giá quy đổi Doanh thu sang VNĐ
+  currency_synced_at TIMESTAMPTZ,                 -- Thời điểm đồng bộ tỷ giá gần nhất
+  currency_sync_note TEXT,                        -- Ghi chú tỷ giá AI (e.g. '1 RM ≈ 5,900 ₫ | 1 VND = 1 ₫')
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

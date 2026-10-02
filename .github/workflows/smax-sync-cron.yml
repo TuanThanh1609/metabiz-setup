@@ -28,4 +28,13 @@ jobs:
           echo "=== 4. BOTAPI TAGGER ABERA ==="
           curl -sS --max-time 45 -X GET "https://metabizai-smax.vercel.app/api/botapi-tagger?project_id=abera"
           echo ""
+
+      - name: Trigger Smax to Neon Sync on Vercel (RedGold)
+        run: |
+          echo "=== 5. SYNC REDGOLD PHILIPPINES ==="
+          curl -sS --max-time 45 -X GET "https://metabizai-smax.vercel.app/api/sync?project_id=redgold&limit=50"
+          echo ""
+          echo "=== 6. BOTAPI TAGGER REDGOLD ==="
+          curl -sS --max-time 45 -X GET "https://metabizai-smax.vercel.app/api/botapi-tagger?project_id=redgold"
+          echo ""
           echo "All projects synced successfully."

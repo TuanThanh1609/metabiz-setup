@@ -33,6 +33,18 @@ Bảng giá & Combo sản phẩm:
 - Paket 3 Botol (Beli 3 Gratis 1 - Tổng 4 chai): Rp 350.000
 - Miễn phí vận chuyển COD toàn Indonesia (Gratis Ongkir).
 Nhu cầu chính: Mờ thâm nám (flek hitam), đốm nâu (bintik hitam), tàn nhang, đồi mồi, dưỡng sáng da.`;
+  } else if (project.id === 'redgold') {
+    productContext = `
+Dự án: REDGOLD Super Vitamin B12 Capsules for Rooster, Horses and Pigeons (Philippines).
+Đơn vị tiền tệ: PHP (Philippine Peso ₱, ví dụ: 499, 599, 799, 999, 1199).
+Bảng giá & Combo sản phẩm:
+- 1 Bottle (50 viên): ₱499 + ₱100 Shipping fee (Tổng ₱599)
+- Buy 2 Bottles (Best Seller): ₱799 + FREE SHIPPING nationwide (Tiết kiệm ₱399)
+- Buy 3 Bottles: ₱999 + FREE SHIPPING nationwide
+- Buy 4 Bottles (Best Deal): ₱1,199 + FREE SHIPPING nationwide
+- Thanh toán khi nhận hàng COD, cho phép kiểm tra hàng trước khi thanh toán cho rider.
+Nhu cầu chính: Bổ sung Vitamin B12 cho gà chọi, gà đá (gamefowl / rooster / fighting cocks), chim bồ câu, chiến kê, tăng cường thể lực, tăng bo đá, dẻo dai, hồi phục cơ bắp, bổ máu, lông bóng mượt.
+Ngôn ngữ khách hàng: Tiếng Anh, Tagalog / Taglish (Philippines).`;
   } else {
     productContext = `
 Dự án: Fitgum Acai Berry Drink Malaysia.
@@ -120,31 +132,31 @@ function determineFunnelStep(lead) {
   const cMsgs = parseInt(lead.customer_messages || 0, 10);
 
   // Step 6: Checkout & COD
-  if (dropoff.includes('địa chỉ') || dropoff.includes('alamat') || transcript.includes('address') || transcript.includes('alamat') || transcript.includes('poskod') || transcript.includes('kodepos') || transcript.includes('postcode') || transcript.includes('hantar ke') || transcript.includes('kirim ke')) {
+  if (dropoff.includes('địa chỉ') || dropoff.includes('alamat') || transcript.includes('address') || transcript.includes('alamat') || transcript.includes('poskod') || transcript.includes('kodepos') || transcript.includes('postcode') || transcript.includes('hantar ke') || transcript.includes('kirim ke') || transcript.includes('ship to') || transcript.includes('deliver to') || transcript.includes('paki-deliver') || transcript.includes('padala')) {
     return { num: 6, step: 'Step 6: Thu thập địa chỉ COD' };
   }
 
   // Step 5: Objection Handling
-  if (dropoff.includes('im lặng sau khi báo') || dropoff.includes('im lặng sau báo giá') || dropoff.includes('chê đắt') || dropoff.includes('suy nghĩ') || dropoff.includes('cân nhắc') || dropoff.includes('mahal') || dropoff.includes('fikir') || dropoff.includes('ragu')) {
+  if (dropoff.includes('im lặng sau khi báo') || dropoff.includes('im lặng sau báo giá') || dropoff.includes('chê đắt') || dropoff.includes('suy nghĩ') || dropoff.includes('cân nhắc') || dropoff.includes('mahal') || dropoff.includes('fikir') || dropoff.includes('ragu') || dropoff.includes('isipin') || transcript.includes('mahal') || transcript.includes('expensive')) {
     return { num: 5, step: 'Step 5: Xử lý từ chối' };
   }
 
   // Step 4: Pricing & Combo
-  if (intent.includes('giá') || intent.includes('combo') || intent.includes('khuyến mãi') || intent.includes('harga') || intent.includes('promo') || intent.includes('paket') || transcript.includes('rm179') || transcript.includes('rm279') || transcript.includes('rm350') || transcript.includes('179') || transcript.includes('297') || transcript.includes('350') || transcript.includes('harga') || transcript.includes('pakej') || transcript.includes('paket')) {
+  if (intent.includes('giá') || intent.includes('combo') || intent.includes('khuyến mãi') || intent.includes('harga') || intent.includes('promo') || intent.includes('paket') || intent.includes('price') || intent.includes('magkano') || transcript.includes('rm179') || transcript.includes('rm279') || transcript.includes('rm350') || transcript.includes('179') || transcript.includes('297') || transcript.includes('350') || transcript.includes('499') || transcript.includes('799') || transcript.includes('999') || transcript.includes('1199') || transcript.includes('₱') || transcript.includes('magkano') || transcript.includes('how much') || transcript.includes('packages') || transcript.includes('discount')) {
     if (cMsgs >= 1) {
       return { num: 4, step: 'Step 4: Báo giá & Combo' };
     }
   }
 
   // Step 3: Social Proof & Reviews
-  if (transcript.includes('feedback') || transcript.includes('testimoni') || transcript.includes('kesan') || transcript.includes('review') || transcript.includes('berkesan') || transcript.includes('selamat') || transcript.includes('bpom') || transcript.includes('bukti')) {
+  if (transcript.includes('feedback') || transcript.includes('testimoni') || transcript.includes('kesan') || transcript.includes('review') || transcript.includes('berkesan') || transcript.includes('selamat') || transcript.includes('bpom') || transcript.includes('bukti') || transcript.includes('legit') || transcript.includes('effective') || transcript.includes('subok') || transcript.includes('proof')) {
     if (cMsgs >= 1) {
       return { num: 3, step: 'Step 3: Bằng chứng xã hội' };
     }
   }
 
   // Step 2: Consultation & USP
-  if (cMsgs >= 1 || intent.includes('giảm cân') || intent.includes('vóc dáng') || intent.includes('tư vấn') || intent.includes('flek') || intent.includes('nám') || intent.includes('kulit')) {
+  if (cMsgs >= 1 || intent.includes('giảm cân') || intent.includes('vóc dáng') || intent.includes('tư vấn') || intent.includes('flek') || intent.includes('nám') || intent.includes('kulit') || intent.includes('rooster') || intent.includes('manok') || intent.includes('vitamin') || intent.includes('sabong') || intent.includes('b12') || transcript.includes('dosage') || transcript.includes('paano gamitin') || transcript.includes('stamina')) {
     return { num: 2, step: 'Step 2: Tư vấn vóc dáng/tình trạng da & USP' };
   }
 
@@ -240,6 +252,10 @@ module.exports = async (req, res) => {
         phone = phone.replace('waMY.', '+60 ');
       } else if (phone.startsWith('waID.')) {
         phone = phone.replace('waID.', '+62 ');
+      } else if (phone.startsWith('waPH.')) {
+        phone = phone.replace('waPH.', '+63 ');
+      } else if (phone.startsWith('waVN.')) {
+        phone = phone.replace('waVN.', '+84 ');
       }
       const adId = wa.ad_id || t.ad_id || '';
       const threadLastMsg = t.last_message_at || t.updated_at;

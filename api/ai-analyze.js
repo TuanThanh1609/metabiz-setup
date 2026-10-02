@@ -14,6 +14,18 @@ Bảng giá & Combo sản phẩm:
 - Paket 3 Botol (Beli 3 Gratis 1 - Tổng 4 chai): Rp 350.000
 - Miễn phí vận chuyển COD toàn Indonesia (Gratis Ongkir).
 Nhu cầu chính: Mờ thâm nám (flek hitam), đốm nâu (bintik hitam), tàn nhang, đồi mồi, dưỡng sáng da.`;
+  } else if (project.id === 'redgold') {
+    productContext = `
+Dự án: REDGOLD Super Vitamin B12 Capsules for Rooster, Horses and Pigeons (Philippines).
+Đơn vị tiền tệ: PHP (Philippine Peso ₱, ví dụ: 499, 599, 799, 999, 1199).
+Bảng giá & Combo sản phẩm:
+- 1 Bottle (50 viên): ₱499 + ₱100 Shipping fee (Tổng ₱599)
+- Buy 2 Bottles (Best Seller): ₱799 + FREE SHIPPING nationwide (Tiết kiệm ₱399)
+- Buy 3 Bottles: ₱999 + FREE SHIPPING nationwide
+- Buy 4 Bottles (Best Deal): ₱1,199 + FREE SHIPPING nationwide
+- Thanh toán khi nhận hàng COD, cho phép kiểm tra hàng trước khi thanh toán cho rider.
+Nhu cầu chính: Bổ sung Vitamin B12 cho gà chọi, gà đá (gamefowl / rooster / fighting cocks), chim bồ câu, chiến kê, tăng cường thể lực, tăng bo đá, dẻo dai, hồi phục cơ bắp, bổ máu, lông bóng mượt.
+Ngôn ngữ khách hàng: Tiếng Anh, Tagalog / Taglish (Philippines).`;
   } else {
     productContext = `
 Dự án: Fitgum Acai Berry Drink Malaysia.

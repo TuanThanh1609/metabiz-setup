@@ -16,6 +16,10 @@
     {
       "path": "/api/sync?project_id=fitgum",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/sync?project_id=redgold",
+      "schedule": "0 0 * * *"
     }
   ],
   "rewrites": [
@@ -26,6 +30,7 @@
     { "source": "/crm/(.*)", "destination": "/crm" },
     { "source": "/fitgum", "destination": "/crm" },
     { "source": "/abera", "destination": "/crm" },
+    { "source": "/redgold", "destination": "/crm" },
     { "source": "/:project", "destination": "/crm" }
   ]
 }

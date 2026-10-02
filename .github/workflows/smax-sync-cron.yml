@@ -1,0 +1,29 @@
+name: Smax WhatsApp 15-Min Sync Cron
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Smax to Neon Sync on Vercel (Fitgum)
+        run: |
+          echo "Triggering Smax sync for project: fitgum..."
+          curl -sS -X GET "https://metabizai-smax.vercel.app/api/sync?project_id=fitgum&limit=50"
+          echo ""
+          echo "Triggering BotAPI tagger for fitgum..."
+          curl -sS -X GET "https://metabizai-smax.vercel.app/api/botapi-tagger?project_id=fitgum"
+          echo ""
+
+      - name: Trigger Smax to Neon Sync on Vercel (Abera)
+        run: |
+          echo "Triggering Smax sync for project: abera..."
+          curl -sS -X GET "https://metabizai-smax.vercel.app/api/sync?project_id=abera&limit=50"
+          echo ""
+          echo "Triggering BotAPI tagger for abera..."
+          curl -sS -X GET "https://metabizai-smax.vercel.app/api/botapi-tagger?project_id=abera"
+          echo ""
+          echo "Done sync for all projects."

@@ -135,9 +135,10 @@ module.exports = async (req, res) => {
     const kpi = kpiRes.rows[0];
 
     // 3. Fetch Daily Aggregation (Mốc Lần đầu nhắn tin)
+    const tz = project.id === 'abera' ? 'Asia/Jakarta' : 'Asia/Kuala_Lumpur';
     const dailySql = `
       SELECT 
-        TO_CHAR(first_msg_at AT TIME ZONE 'Asia/Kuala_Lumpur', 'YYYY-MM-DD') as day,
+        TO_CHAR(first_msg_at AT TIME ZONE '${tz}', 'YYYY-MM-DD') as day,
         COUNT(*)::int as total,
         COUNT(CASE WHEN conversation_result = 'Đang tư vấn' THEN 1 END)::int as consulting,
         COUNT(CASE WHEN conversation_result = 'Có nhu cầu' THEN 1 END)::int as hot,
@@ -171,8 +172,27 @@ module.exports = async (req, res) => {
     const funnelStats = FUNNEL_STEPS_METADATA.map(stepMeta => {
       const count = funnelCountMap[stepMeta.num] || 0;
       const pct = Math.round((count / totalLeadsCount) * 1000) / 10;
+      let obj = stepMeta.objective;
+      let action = stepMeta.bottleneckAction;
+      if (project.id === 'abera') {
+        if (stepMeta.num === 2) {
+          obj = 'Đồng cảm vấn đề nám da, tàn nhang, giải thích cơ chế thẩm thấu của Serum Abera';
+          action = 'Giữ tin nhắn dưới 50 từ/tin, gửi ảnh phân tích da và chứng nhận BPOM để tạo niềm tin.';
+        } else if (stepMeta.num === 3) {
+          obj = 'Cung cấp feedback, review thực tế từ khách hàng đã cải thiện nám, sáng da';
+          action = 'Tự động gửi ảnh review trước/sau và feedback chân thực của khách hàng đã mờ nám sau 2-4 tuần.';
+        } else if (stepMeta.num === 4) {
+          obj = 'Báo giá 3 gói: 1 Chai (179k), Combo 2 Tặng 1 (297k) và Combo 3 Tặng 1 (350k)';
+          action = 'Làm nổi bật Combo 2 Tặng 1 (Best Seller) kèm ưu đãi Gratis Ongkir toàn Indonesia.';
+        } else if (stepMeta.num === 5) {
+          obj = 'Hóa giải lo ngại đắt, sợ không mờ nám, hoặc khôi phục khách im lặng sau báo giá';
+          action = 'Chia nhỏ chi phí (khoảng 9.900 Rp/ngày), nhấn mạnh chính sách giao hàng COD kiểm tra trước khi trả tiền.';
+        }
+      }
       return {
         ...stepMeta,
+        objective: obj,
+        bottleneckAction: action,
         count: count,
         percentage: pct
       };

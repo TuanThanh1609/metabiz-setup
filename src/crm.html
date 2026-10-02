@@ -1007,6 +1007,16 @@
         document.getElementById('sidebarProjectName').innerText = projectMeta.name || PROJECT_ID;
         document.title = `${projectMeta.name || PROJECT_ID} - Mini CRM`;
 
+        const badgeEl = document.getElementById('projectBadge');
+        if (badgeEl) {
+          const flag = (projectMeta.currency === 'IDR' || PROJECT_ID === 'abera') ? '🇮🇩' : '🇲🇾';
+          badgeEl.innerText = `${flag} Livechat CRM`;
+        }
+        const logoEl = document.getElementById('projectLogo');
+        if (logoEl) {
+          logoEl.innerText = (projectMeta.name || PROJECT_ID).trim()[0].toUpperCase();
+        }
+
         allLeads = json.leads || [];
         funnelData = json.funnelStats || null;
         adsData = json.adsStats || [];

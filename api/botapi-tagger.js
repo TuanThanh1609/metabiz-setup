@@ -42,7 +42,7 @@ module.exports = async (req, res) => {
     const defaultPageId = (project.smax_page_pid || '').split(',')[0].trim();
 
     // 2. TAG THÀNH CÔNG (CHỐT ĐƠN)
-    // Chỉ chọn những đơn đã chốt và CHƯA TỪNG gắn tag (tagged_success_at IS NULL)
+    // Chỉ chọn những đơn đã chốt và CHƯA TỪNG gắn tag (tagged_success_at IS NULL), giới hạn tối đa 15 đơn/lần quét
     if (project.botapi_success_url && project.botapi_success_token) {
       const successLeads = await client.query(`
         SELECT id, tid, customer_name, phone, order_details, order_combo, order_amount
@@ -50,6 +50,8 @@ module.exports = async (req, res) => {
         WHERE project_id = $1 
           AND conversation_result = 'Đã chốt đơn'
           AND tagged_success_at IS NULL
+        ORDER BY id DESC
+        LIMIT 15;
       `, [projectId]);
 
       for (const l of successLeads.rows) {
@@ -86,7 +88,7 @@ module.exports = async (req, res) => {
     }
 
     // 3. TAG CÓ NHU CẦU (TIỀM NĂNG CAO)
-    // Chỉ chọn khách gửi >= 3 tin, có nhu cầu cao, CHƯA TỪNG gắn tag nhu cầu VÀ CHƯA TỪNG gắn tag thành công
+    // Chỉ chọn khách gửi >= 3 tin, có nhu cầu cao, CHƯA TỪNG gắn tag nhu cầu VÀ CHƯA TỪNG gắn tag thành công, giới hạn tối đa 15 lead/lần quét
     if (project.botapi_demand_url && project.botapi_demand_token) {
       const demandLeads = await client.query(`
         SELECT id, tid, customer_name, phone, main_intent, customer_messages
@@ -96,6 +98,8 @@ module.exports = async (req, res) => {
           AND customer_messages >= 3
           AND tagged_demand_at IS NULL
           AND tagged_success_at IS NULL
+        ORDER BY id DESC
+        LIMIT 15;
       `, [projectId]);
 
       for (const l of demandLeads.rows) {

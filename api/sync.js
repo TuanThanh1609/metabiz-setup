@@ -514,9 +514,9 @@ module.exports = async (req, res) => {
       let aiAnalyzedAt = null;
       let aiRawAnalysis = null;
 
-      // Token.ai GPT-5 Integration: If enabled and thread has customer interaction
+      // Token.ai GPT-5 Integration: Only run if explicitly requested (?ai=true) or for unanalyzed leads when requested
       const isAiEnabled = project.ai_enabled !== false && Boolean(project.ai_token);
-      const shouldRunAi = isAiEnabled && customerMessages > 0 && (aiAnalyzedThisSync < MAX_AI_PER_SYNC || req.query?.ai === 'true');
+      const shouldRunAi = isAiEnabled && !existing?.ai_analyzed_at && customerMessages > 0 && req.query?.ai === 'true';
       if (shouldRunAi) {
         const transcriptStr = rawTranscript.map(r => `[${r.sender}]: ${r.text}`).join('\n');
         if (transcriptStr.trim()) {

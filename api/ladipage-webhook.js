@@ -34,24 +34,33 @@ function extractLadiFormData(body) {
     return { name, phone, address, combo, note, amount, adId, utmSource, utmCampaign };
   }
 
+  // Handle nested wrapper like { data: { form_data: [...] } }
+  const payload = (body.data && typeof body.data === 'object' && !Array.isArray(body.data))
+    ? { ...body, ...body.data }
+    : body;
+
   // 1. If LadiPage sends nested form_data array
-  if (Array.isArray(body.form_data)) {
-    for (const item of body.form_data) {
+  const formDataArr = Array.isArray(payload.form_data)
+    ? payload.form_data
+    : (Array.isArray(body.form_data) ? body.form_data : null);
+
+  if (Array.isArray(formDataArr)) {
+    for (const item of formDataArr) {
       if (!item || !item.name) continue;
       const key = String(item.name).toLowerCase().trim().replace(/[\s_-]/g, '');
       const val = item.value != null ? String(item.value).trim() : '';
 
-      if (key === 'name' || key === 'fullname' || key === 'hoten' || key === 'nama' || key === 'namalengkap') {
+      if (/name|hoten|hovaten|ten|first|nama/i.test(key)) {
         name = val;
-      } else if (key === 'phone' || key === 'tel' || key === 'sdt' || key === 'whatsapp' || key === 'nohp' || key === 'nowa' || key === 'telepon') {
+      } else if (/phone|tel|sdt|sodienthoai|dienthoai|mobile|whatsapp|nohp|nowa|telepon/i.test(key)) {
         phone = val;
-      } else if (key === 'address' || key === 'diachi' || key === 'alamat' || key === 'street' || key === 'alamatpengiriman') {
+      } else if (/address|diachi|alamat|street|dia_chi/i.test(key)) {
         address = val;
-      } else if (key === 'combo' || key === 'product' || key === 'sanpham' || key === 'paket' || key === 'package' || key === 'item') {
+      } else if (/combo|product|sanpham|paket|package|item/i.test(key)) {
         combo = val;
-      } else if (key === 'note' || key === 'ghichu' || key === 'catatan' || key === 'message' || key === 'pesan') {
+      } else if (/note|ghichu|catatan|message|pesan/i.test(key)) {
         note = val;
-      } else if (key === 'price' || key === 'amount' || key === 'gia' || key === 'total' || key === 'totalrevenue') {
+      } else if (/price|amount|gia|total/i.test(key)) {
         const num = parseFloat(String(val).replace(/[^0-9.]/g, ''));
         if (!isNaN(num) && num > 0) amount = num;
       }
@@ -59,19 +68,54 @@ function extractLadiFormData(body) {
   }
 
   // 2. Fallback to top-level object fields (flat JSON)
-  if (!name) name = body.name || body.full_name || body.fullname || body.customer_name || body.nama || '';
-  if (!phone) phone = body.phone || body.phone_number || body.tel || body.sdt || body.whatsapp || body.no_hp || '';
-  if (!address) address = body.address || body.street_address || body.dia_chi || body.alamat || '';
-  if (!combo) combo = body.combo || body.product || body.package || body.san_pham || body.paket || '';
-  if (!note) note = body.note || body.ghi_chu || body.catatan || body.message || '';
-  if (!amount && body.total_revenue) amount = parseFloat(body.total_revenue) || 0;
-  if (!amount && body.amount) amount = parseFloat(body.amount) || 0;
-  if (!amount && body.price) amount = parseFloat(body.price) || 0;
+  if (!name) {
+    for (const k of Object.keys(payload)) {
+      if (/^(name|full_name|fullname|hoten|ho_ten|first_name|nama|customer_name|ten)$/i.test(k)) {
+        name = String(payload[k]).trim();
+        break;
+      }
+    }
+  }
+  if (!phone) {
+    for (const k of Object.keys(payload)) {
+      if (/^(phone|phone_number|tel|sdt|so_dien_thoai|dienthoai|whatsapp|nohp|no_hp|mobile)$/i.test(k)) {
+        phone = String(payload[k]).trim();
+        break;
+      }
+    }
+  }
+  if (!address) {
+    for (const k of Object.keys(payload)) {
+      if (/^(address|street_address|dia_chi|diachi|alamat|street)$/i.test(k)) {
+        address = String(payload[k]).trim();
+        break;
+      }
+    }
+  }
+  if (!combo) {
+    for (const k of Object.keys(payload)) {
+      if (/^(combo|product|package|san_pham|sanpham|paket|item)$/i.test(k)) {
+        combo = String(payload[k]).trim();
+        break;
+      }
+    }
+  }
+  if (!note) {
+    for (const k of Object.keys(payload)) {
+      if (/^(note|ghi_chu|catatan|message|pesan)$/i.test(k)) {
+        note = String(payload[k]).trim();
+        break;
+      }
+    }
+  }
+  if (!amount && payload.total_revenue) amount = parseFloat(payload.total_revenue) || 0;
+  if (!amount && payload.amount) amount = parseFloat(payload.amount) || 0;
+  if (!amount && payload.price) amount = parseFloat(payload.price) || 0;
 
   // 3. Extract Tracking / Ads parameters
-  adId = body.ad_id || body.utm_content || body.utm_term || '';
-  utmSource = body.utm_source || '';
-  utmCampaign = body.utm_campaign || '';
+  adId = payload.ad_id || payload.utm_content || payload.utm_term || '';
+  utmSource = payload.utm_source || '';
+  utmCampaign = payload.utm_campaign || '';
 
   return { name, phone, address, combo, note, amount, adId, utmSource, utmCampaign };
 }
@@ -112,35 +156,38 @@ function normalizePhoneNumber(rawPhone, projectId) {
 
 // Generate tailored WhatsApp pre-filled text per project & language
 function buildWhatsAppMessage(projectId, orderId, name, phone, address, combo, amount, currency) {
+  const phoneDisplay = phone ? (phone.startsWith('+') ? phone : `+${phone}`) : '(Belum ada No HP)';
   if (projectId === 'abera') {
     // Bahasa Indonesia
     return `Halo Abera Indonesia! 🌸 Saya baru saja pesan melalui Website:
 📋 ID Pesanan: #${orderId}
 📦 Paket: ${combo} (Rp ${amount.toLocaleString()})
 👤 Nama: ${name}
-📞 No HP: +${phone}
+📞 No HP: ${phoneDisplay}
 📍 Alamat: ${address}
 🚚 Pengiriman: Gratis Ongkir COD (Bayar di Tempat)
 
 #KONFIRMASI_PESANAN - Mimin mohon konfirmasi pesanan saya & kirimkan nomor resinya ya! 🙏`;
   } else if (projectId === 'fitgum') {
     // Bahasa Melayu / English
+    const phoneDisplayMY = phone ? (phone.startsWith('+') ? phone : `+${phone}`) : '(No phone)';
     return `Hi Fitgum Malaysia! 🍇 I just placed an order via Website:
 📋 Order ID: #${orderId}
 📦 Combo: ${combo} (RM ${amount})
 👤 Name: ${name}
-📞 Phone: +${phone}
+📞 Phone: ${phoneDisplayMY}
 📍 Address: ${address}
 🚚 Delivery: Free Shipping COD (Cash on Delivery)
 
 #CONFIRM_ORDER - Please confirm my order and send tracking details! 🙏`;
   } else {
     // Tiếng Việt
+    const phoneDisplayVN = phone ? (phone.startsWith('+') ? phone : `+${phone}`) : '(Chưa có SĐT)';
     return `Chào shop! Tôi vừa đặt hàng qua Website:
 📋 Mã đơn hàng: #${orderId}
 📦 Sản phẩm/Combo: ${combo} (${amount.toLocaleString()} ${currency})
 👤 Người nhận: ${name}
-📞 Số điện thoại: +${phone}
+📞 Số điện thoại: ${phoneDisplayVN}
 📍 Địa chỉ giao hàng: ${address}
 🚚 Hình thức: Giao hàng kiểm tra thanh toán tận nơi (COD)
 
@@ -283,7 +330,7 @@ module.exports = async (req, res) => {
       amount,
       currency
     );
-    const whatsappUrl = `https://wa.me/${waPhone}?text=${encodeURIComponent(messageText)}`;
+    const whatsappUrl = `https://api.whatsapp.com/send/?phone=${waPhone}&text=${encodeURIComponent(messageText)}`;
 
     // Order Details Summary
     const orderDetails = `📦 ${combo} (${currency} ${amount.toLocaleString()}) | 👤 Người nhận: ${customerName} | 📞 ${finalPhone} | 📍 Địa chỉ: ${address} | 🚚 COD Free Shipping (Nguồn: LadiPage #${orderId})`;

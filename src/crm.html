@@ -3,29 +3,47 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WhatsApp Mini CRM - Live Dashboard</title>
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23059669'/%3E%3Ctext x='32' y='44' text-anchor='middle' font-family='Arial,sans-serif' font-size='36' font-weight='700' fill='white'%3EC%3C/text%3E%3C/svg%3E">
+  <title>Smax AI - WhatsApp Mini CRM &amp; Meta Ads Intelligence</title>
+  
+  <!-- Smax Official Favicon -->
+  <link rel="icon" type="image/png" href="https://i.ibb.co/tTXsDCSP/LOGO-SMAX-AI-MOBLE-N-N-TR-NG-08.png">
+  <link rel="apple-touch-icon" href="https://i.ibb.co/tTXsDCSP/LOGO-SMAX-AI-MOBLE-N-N-TR-NG-08.png">
+  
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Google Fonts: Roboto -->
+  
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono (Evondev /ui-ux style) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400;1,500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&display=swap" rel="stylesheet">
+  
   <style>
-    * { font-family: 'Roboto', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
-    /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #f1f5f9; }
+    * { font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    .font-mono { font-family: 'JetBrains Mono', monospace !important; }
+    
+    /* Modern Micro Scrollbar */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: #f8fafc; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
     ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
     .nav-active {
       background-color: #0f172a !important;
       color: #ffffff !important;
+      box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
     }
     .nav-active svg {
       color: #10b981 !important;
+    }
+    
+    .drawer-tab-active {
+      background-color: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.08);
+      font-weight: 700 !important;
     }
   </style>
 </head>
@@ -40,23 +58,56 @@
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
         </button>
 
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center font-extrabold text-white text-xl shadow-lg shadow-emerald-500/20" id="projectLogo">
-          C
+        <!-- Smax AI Official Brand Logo -->
+        <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center p-1 shadow-sm border border-slate-700/60 flex-shrink-0 overflow-hidden" id="projectLogoContainer" title="Smax.ai WhatsApp Intelligence Platform">
+          <img src="https://i.ibb.co/tTXsDCSP/LOGO-SMAX-AI-MOBLE-N-N-TR-NG-08.png" alt="Smax AI Logo" class="w-full h-full object-contain" id="projectLogoImg" />
         </div>
+
         <div>
           <div class="flex items-center space-x-2">
-            <h1 class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-1.5" id="projectHeading">
-              <span id="projectTitle">Mini CRM</span>
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" id="projectBadge">
-                🇲🇾 Livechat CRM
-              </span>
-            </h1>
+            <!-- Project Dropdown Switcher -->
+            <div class="relative inline-block text-left" id="projectSwitcherWrapper">
+              <button onclick="toggleProjectDropdown()" class="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700/80 text-white text-xs font-bold border border-slate-700 transition" id="projectDropdownBtn">
+                <span id="projectBadgeFlag">🇲🇾</span>
+                <span id="projectTitle" class="truncate max-w-[140px] sm:max-w-[200px]">Fitgum Acai Berry</span>
+                <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+              </button>
+              
+              <!-- Dropdown Menu -->
+              <div id="projectDropdownMenu" class="hidden absolute left-0 mt-1 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 py-1 divide-y divide-slate-800">
+                <div class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Chọn Dự Án Đang Chạy</div>
+                <a href="/fitgum" onclick="handleProjectSelect(event, 'fitgum')" class="flex items-center justify-between px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 transition">
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">🇲🇾</span>
+                    <div>
+                      <div class="font-bold text-white">Fitgum Acai Berry</div>
+                      <div class="text-[10px] text-slate-400 font-mono">Malaysia · RM · Smax WA</div>
+                    </div>
+                  </div>
+                  <span id="checkFitgum" class="text-emerald-400 text-xs font-bold">✓</span>
+                </a>
+                <a href="/abera" onclick="handleProjectSelect(event, 'abera')" class="flex items-center justify-between px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 transition">
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">🇮🇩</span>
+                    <div>
+                      <div class="font-bold text-white">Abera Dark Spot Serum</div>
+                      <div class="text-[10px] text-slate-400 font-mono">Indonesia · IDR · Smax WA</div>
+                    </div>
+                  </div>
+                  <span id="checkAbera" class="text-emerald-400 text-xs font-bold hidden">✓</span>
+                </a>
+              </div>
+            </div>
+
+            <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30" id="projectBadge">
+              🇲🇾 Livechat CRM
+            </span>
           </div>
-          <p class="text-xs text-slate-400 flex items-center gap-1.5 flex-wrap">
+          <p class="text-xs text-slate-400 flex items-center gap-1.5 flex-wrap mt-0.5">
             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
             Realtime DB: <span class="font-medium text-slate-300">Neon Postgres</span>
             <span class="text-slate-600">•</span>
-            <span class="text-slate-400" id="projectSlugText">Project: fitgum</span>
+            <span class="text-slate-400 font-mono" id="projectSlugText">Project: fitgum</span>
             <span class="text-slate-600">•</span>
             <span id="syncStatusBadge" class="text-emerald-400 font-medium cursor-pointer hover:underline flex items-center gap-1" onclick="manualSync()" title="Bấm để đồng bộ tin nhắn ngay từ Smax">
               <span>🔄</span> <span>Smax Auto: 15p</span>
@@ -106,11 +157,22 @@
     <aside class="w-64 flex-shrink-0 bg-white border-r border-slate-200 hidden md:flex flex-col py-6 px-3 justify-between">
       <div class="space-y-6">
         <!-- Project Identity Mini Box -->
-        <div class="px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-100">
-          <div class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Dự Án Đang Xem</div>
-          <div class="font-bold text-slate-800 text-sm truncate mt-0.5" id="sidebarProjectName">Fitgum Acai Berry</div>
-          <div class="text-[11px] text-emerald-600 font-medium flex items-center gap-1 mt-1">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Live Smax Sync
+        <div class="px-3.5 py-3 rounded-2xl bg-slate-50 border border-slate-200/80">
+          <div class="flex items-center justify-between">
+            <div class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Dự Án Đang Xem</div>
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          </div>
+          <div class="font-bold text-slate-900 text-sm truncate mt-1 flex items-center gap-1.5">
+            <span id="sidebarProjectFlag">🇲🇾</span>
+            <span id="sidebarProjectName" class="truncate">Fitgum Acai Berry</span>
+          </div>
+          <div class="text-[11px] text-emerald-700 font-medium flex items-center justify-between mt-2 pt-2 border-t border-slate-200/60">
+            <span class="flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Live Smax Sync
+            </span>
+            <button onclick="toggleProjectDropdown()" class="text-[10px] font-bold text-indigo-600 hover:text-indigo-800 hover:underline">
+              Đổi dự án ▾
+            </button>
           </div>
         </div>
 
@@ -779,109 +841,175 @@
     </main>
   </div>
 
-  <!-- CHAT DRAWER (SLIDE-OVER MODAL) -->
+  <!-- CHAT DRAWER (SLIDE-OVER MODAL - EVONDEV /UI-UX ENHANCED) -->
   <div id="chatDrawer" class="fixed inset-0 z-50 overflow-hidden hidden" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
     <div class="absolute inset-0 bg-slate-900/50 backdrop-blur-sm transition-opacity" onclick="closeChatDrawer()"></div>
 
-    <div class="fixed inset-y-0 right-0 max-w-full flex pl-10">
+    <div class="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
       <div class="w-screen max-w-md sm:max-w-lg bg-white shadow-2xl flex flex-col">
         <!-- Drawer Header -->
         <div class="p-4 bg-slate-900 text-white flex items-center justify-between border-b border-slate-800">
           <div class="flex items-center space-x-3">
-            <div class="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-sm border border-emerald-500/30" id="drawerAvatar">
+            <div class="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-300 font-bold flex items-center justify-center text-sm border border-emerald-500/30 flex-shrink-0" id="drawerAvatar">
               KH
             </div>
             <div>
-              <h3 class="text-sm font-bold text-white flex items-center gap-1.5" id="drawerTitle">
-                Customer Name
-              </h3>
-              <p class="text-xs text-slate-400 font-mono" id="drawerPhone">+60 xxxx xxxx</p>
-            </div>
-          </div>
-          <button onclick="closeChatDrawer()" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-          </button>
-        </div>
-
-        <!-- Drawer Content Container: Shows Full Order Card if 'Đã chốt đơn', else Standard Info -->
-        <div id="drawerLeadInfoContainer">
-          <!-- Funnel Step Indicator inside Drawer -->
-          <div class="px-4 py-2 bg-slate-100 border-b border-slate-200 text-xs flex items-center justify-between">
-            <span class="text-slate-500 font-medium">Giai đoạn Phễu:</span>
-            <span id="drawerFunnelStepBadge" class="font-bold px-2.5 py-0.5 rounded-full text-[11px] bg-indigo-50 text-indigo-700 border border-indigo-200"></span>
-          </div>
-
-          <!-- 1. Standard Info Box (for Non-closed leads) -->
-          <div id="drawerStandardBox" class="p-4 bg-slate-50 border-b border-slate-200 text-xs space-y-1.5">
-            <div class="flex items-center justify-between">
-              <span class="text-slate-500">Mã Ad:</span>
-              <span id="drawerAdId" class="font-mono text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200"></span>
-            </div>
-            <div class="flex items-center justify-between">
-              <span class="text-slate-500">Trạng thái:</span>
-              <span id="drawerStatusBadge" class="font-bold px-2 py-0.5 rounded text-[11px]"></span>
-            </div>
-            <div class="flex items-start justify-between">
-              <span class="text-slate-500">Nhu cầu chính:</span>
-              <span id="drawerIntent" class="text-slate-700 text-right font-medium"></span>
-            </div>
-            <div class="flex items-start justify-between">
-              <span class="text-slate-500">Điểm nghẽn / Ghi chú:</span>
-              <span id="drawerDropoff" class="text-slate-600 text-right font-medium"></span>
-            </div>
-          </div>
-
-          <!-- 2. FULL ORDER CARD (HIỂN THỊ ĐẦY ĐỦ THÔNG TIN ĐƠN HÀNG) -->
-          <div id="drawerOrderFullCard" class="hidden p-4 bg-gradient-to-br from-emerald-50 via-teal-50/60 to-emerald-50 border-b border-emerald-200 text-xs space-y-3">
-            <div class="flex items-center justify-between pb-2 border-b border-emerald-200/80">
               <div class="flex items-center gap-2">
-                <span class="text-base">📦</span>
-                <span class="font-extrabold text-emerald-950 uppercase tracking-wide text-xs">THÔNG TIN ĐƠN HÀNG ĐÃ CHỐT</span>
+                <h3 class="text-sm font-bold text-white flex items-center gap-1.5" id="drawerTitle">
+                  Customer Name
+                </h3>
+                <span id="drawerFunnelStepBadge" class="font-bold px-2 py-0.5 rounded-full text-[10px] bg-indigo-50 text-indigo-700 border border-indigo-200"></span>
               </div>
-              <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-600 text-white shadow-sm flex items-center gap-1">
-                <span>✓</span> COD Thành Công
-              </span>
+              <p class="text-xs text-slate-400 font-mono mt-0.5" id="drawerPhone">+60 xxxx xxxx</p>
             </div>
-
-            <!-- Product & COD Amount -->
-            <div class="grid grid-cols-2 gap-2">
-              <div class="bg-white/80 rounded-xl p-2.5 border border-emerald-100">
-                <div class="text-[10px] uppercase font-bold text-slate-400">Combo Sản Phẩm</div>
-                <div class="font-extrabold text-emerald-900 text-xs mt-0.5 truncate" id="orderCardCombo">Combo 1</div>
-              </div>
-              <div class="bg-white/80 rounded-xl p-2.5 border border-emerald-100">
-                <div class="text-[10px] uppercase font-bold text-slate-400">Tiền Thu Hộ COD</div>
-                <div class="font-black text-emerald-700 text-sm mt-0.5" id="orderCardAmount">RM 179.00</div>
-              </div>
-            </div>
-
-            <!-- Shipping Recipient Details -->
-            <div class="bg-white/90 rounded-xl p-3 border border-emerald-200 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-slate-500 font-medium">👤 Người nhận:</span>
-                <span class="font-bold text-slate-800 text-right" id="orderCardRecipient">John Doe</span>
-              </div>
-              <div class="flex items-center justify-between">
-                <span class="text-slate-500 font-medium">📞 Số điện thoại:</span>
-                <span class="font-bold text-slate-800 font-mono text-right" id="orderCardPhone">+60 12345678</span>
-              </div>
-              <div class="flex items-start justify-between gap-2 pt-1 border-t border-slate-100">
-                <span class="text-slate-500 font-medium whitespace-nowrap">📍 Địa chỉ giao:</span>
-                <span class="font-semibold text-slate-900 text-right leading-snug" id="orderCardAddress">Kuala Lumpur, Malaysia</span>
-              </div>
-            </div>
-
-            <!-- Action: Copy Order Details -->
-            <button onclick="copyFullOrderInfo()" class="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/20 transition">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
-              <span>Sao chép thông tin đơn để giao hàng</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <a id="drawerWhatsAppDirectBtn" href="#" target="_blank" class="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1 transition" title="Mở chat trực tiếp trên WhatsApp">
+              <span>💬</span> <span class="hidden sm:inline">WhatsApp</span>
+            </a>
+            <button onclick="closeChatDrawer()" class="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
             </button>
           </div>
         </div>
 
-        <!-- Chat History Messages Container -->
-        <div class="flex-1 overflow-y-auto p-4 space-y-3 bg-[#e5ddd5]/30" id="drawerChatMessages">
-          <!-- Rendered by JS -->
+        <!-- 3 Segmented Drawer Tabs Header (/ui-ux design) -->
+        <div class="px-3 py-2 bg-slate-100 border-b border-slate-200 flex items-center gap-1 text-xs">
+          <button onclick="switchDrawerTab('order')" id="tabBtnOrder" class="drawer-tab flex-1 py-1.5 px-2 rounded-lg font-bold text-slate-700 bg-white border border-slate-200 shadow-xs transition flex items-center justify-center gap-1.5">
+            <span>📦</span> <span>Đơn Hàng COD</span>
+          </button>
+          <button onclick="switchDrawerTab('chat')" id="tabBtnChat" class="drawer-tab flex-1 py-1.5 px-2 rounded-lg font-medium text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5">
+            <span>💬</span> <span>Lịch Sử Chat</span>
+          </button>
+          <button onclick="switchDrawerTab('ai')" id="tabBtnAi" class="drawer-tab flex-1 py-1.5 px-2 rounded-lg font-medium text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5">
+            <span>🧠</span> <span>AI Bóc Tách</span>
+          </button>
+        </div>
+
+        <!-- Drawer Body Tabs Container -->
+        <div class="flex-1 overflow-y-auto">
+          <!-- TAB 1: ORDER INFO & COD CARD -->
+          <div id="drawerTabOrder" class="p-4 space-y-4">
+            <!-- Full Order Card (Shown if closed order) -->
+            <div id="drawerOrderFullCard" class="hidden bg-gradient-to-br from-emerald-50 via-teal-50/50 to-emerald-50 rounded-2xl p-4 border border-emerald-200 text-xs space-y-3 shadow-xs">
+              <div class="flex items-center justify-between pb-2 border-b border-emerald-200/80">
+                <div class="flex items-center gap-2">
+                  <span class="text-base">📦</span>
+                  <span class="font-extrabold text-emerald-950 uppercase tracking-wide text-xs">THÔNG TIN ĐƠN HÀNG COD</span>
+                </div>
+                <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-emerald-600 text-white shadow-xs flex items-center gap-1">
+                  <span>✓</span> COD Thành Công
+                </span>
+              </div>
+
+              <!-- Product & COD Amount -->
+              <div class="grid grid-cols-2 gap-2">
+                <div class="bg-white/90 rounded-xl p-2.5 border border-emerald-100">
+                  <div class="text-[10px] uppercase font-bold text-slate-400">Combo Sản Phẩm</div>
+                  <div class="font-extrabold text-emerald-900 text-xs mt-0.5 truncate" id="orderCardCombo">Combo 1</div>
+                </div>
+                <div class="bg-white/90 rounded-xl p-2.5 border border-emerald-100">
+                  <div class="text-[10px] uppercase font-bold text-slate-400">Tiền Thu Hộ COD</div>
+                  <div class="font-black text-emerald-700 text-sm mt-0.5" id="orderCardAmount">0.00</div>
+                </div>
+              </div>
+
+              <!-- Shipping Recipient Details -->
+              <div class="bg-white/90 rounded-xl p-3 border border-emerald-200 space-y-2">
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-500 font-medium">👤 Người nhận:</span>
+                  <span class="font-bold text-slate-800 text-right" id="orderCardRecipient">John Doe</span>
+                </div>
+                <div class="flex items-center justify-between">
+                  <span class="text-slate-500 font-medium">📞 Số điện thoại:</span>
+                  <span class="font-bold text-slate-800 font-mono text-right" id="orderCardPhone">+60 12345678</span>
+                </div>
+                <div class="flex items-start justify-between gap-2 pt-1 border-t border-slate-100">
+                  <span class="text-slate-500 font-medium whitespace-nowrap">📍 Địa chỉ giao:</span>
+                  <span class="font-semibold text-slate-900 text-right leading-snug" id="orderCardAddress">Địa chỉ giao hàng</span>
+                </div>
+              </div>
+
+              <!-- Action: Copy Order Details -->
+              <button onclick="copyFullOrderInfo()" class="w-full py-2.5 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-600/20 transition">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                <span>Sao chép thông tin gửi Đơn Vị Vận Chuyển</span>
+              </button>
+            </div>
+
+            <!-- Standard Lead Info (if not closed) -->
+            <div id="drawerStandardBox" class="bg-slate-50 rounded-2xl p-4 border border-slate-200 text-xs space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-slate-200">
+                <span class="font-bold text-slate-700">Trạng thái hội thoại:</span>
+                <span id="drawerStatusBadge" class="font-bold px-2 py-0.5 rounded text-[11px]"></span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-slate-500">Mã Ad:</span>
+                <span id="drawerAdId" class="font-mono text-slate-700 bg-white px-2 py-0.5 rounded border border-slate-200"></span>
+              </div>
+              <div class="flex items-start justify-between">
+                <span class="text-slate-500">Nhu cầu chính:</span>
+                <span id="drawerIntent" class="text-slate-800 text-right font-medium max-w-[240px]"></span>
+              </div>
+              <div class="flex items-start justify-between">
+                <span class="text-slate-500">Điểm nghẽn:</span>
+                <span id="drawerDropoff" class="text-slate-600 text-right font-medium max-w-[240px]"></span>
+              </div>
+              
+              <div class="pt-2 border-t border-slate-200 text-center">
+                <p class="text-slate-400 text-[11px]">Khách hàng này chưa hoàn tất chốt đơn COD.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- TAB 2: WHATSAPP CHAT MESSAGES -->
+          <div id="drawerTabChat" class="hidden p-4 space-y-3 bg-[#e5ddd5]/30 min-h-full">
+            <div id="drawerChatMessages" class="space-y-3">
+              <!-- Rendered by JS -->
+            </div>
+          </div>
+
+          <!-- TAB 3: DEEP AI ANALYSIS (TOKEN.AI GPT-5) -->
+          <div id="drawerTabAi" class="hidden p-4 space-y-4 text-xs">
+            <div class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl p-4 border border-indigo-100 space-y-3">
+              <div class="flex items-center justify-between pb-2 border-b border-indigo-200/60">
+                <div class="font-bold text-indigo-900 flex items-center gap-1.5">
+                  <span>🧠</span> Phân Tích Ngữ Nghĩa Token.ai (GPT-5)
+                </div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-100 text-indigo-800">
+                  Phễu 7 Bước
+                </span>
+              </div>
+
+              <div>
+                <span class="text-slate-500 font-semibold">Giai đoạn Phễu được phân loại:</span>
+                <div class="mt-1 font-bold text-slate-900 text-sm flex items-center gap-1.5" id="drawerAiFunnelText">
+                  Step 1: Tiếp cận &amp; Chào mừng
+                </div>
+              </div>
+
+              <div>
+                <span class="text-slate-500 font-semibold">Nhu cầu cốt lõi bóc tách:</span>
+                <p class="mt-1 text-slate-800 font-medium bg-white/80 p-2.5 rounded-xl border border-indigo-100" id="drawerAiIntentText">
+                  Khách hàng tìm hiểu thông tin
+                </p>
+              </div>
+
+              <div>
+                <span class="text-slate-500 font-semibold">Điểm nghẽn rơi rụng (Drop-off Bottleneck):</span>
+                <p class="mt-1 text-amber-800 font-medium bg-amber-50/80 p-2.5 rounded-xl border border-amber-200" id="drawerAiDropoffText">
+                  Chưa phát hiện điểm nghẽn
+                </p>
+              </div>
+
+              <div>
+                <span class="text-slate-500 font-semibold">Bằng chứng trích dẫn nguyên văn:</span>
+                <p class="mt-1 text-slate-700 italic bg-white/80 p-2.5 rounded-xl border border-indigo-100 font-mono text-[11px] whitespace-pre-wrap" id="drawerAiEvidenceText">
+                  Không có trích đoạn
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -940,6 +1068,58 @@
 
     // Update Project Slug on Header
     document.getElementById('projectSlugText').innerText = `Project: ${PROJECT_ID}`;
+
+    let activeDrawerTab = 'order';
+
+    function switchDrawerTab(tabName) {
+      activeDrawerTab = tabName;
+      const orderEl = document.getElementById('drawerTabOrder');
+      const chatEl = document.getElementById('drawerTabChat');
+      const aiEl = document.getElementById('drawerTabAi');
+      if (orderEl) orderEl.classList.toggle('hidden', tabName !== 'order');
+      if (chatEl) chatEl.classList.toggle('hidden', tabName !== 'chat');
+      if (aiEl) aiEl.classList.toggle('hidden', tabName !== 'ai');
+
+      const tabs = ['order', 'chat', 'ai'];
+      tabs.forEach(t => {
+        const btn = document.getElementById('tabBtn' + t.charAt(0).toUpperCase() + t.slice(1));
+        if (btn) {
+          if (t === tabName) {
+            btn.className = 'drawer-tab flex-1 py-1.5 px-2 rounded-lg font-bold text-slate-900 bg-white border border-slate-300 shadow-xs transition flex items-center justify-center gap-1.5';
+          } else {
+            btn.className = 'drawer-tab flex-1 py-1.5 px-2 rounded-lg font-medium text-slate-600 hover:text-slate-900 transition flex items-center justify-center gap-1.5';
+          }
+        }
+      });
+    }
+
+    function toggleProjectDropdown() {
+      const menu = document.getElementById('projectDropdownMenu');
+      if (menu) menu.classList.toggle('hidden');
+    }
+
+    // Close dropdown on click outside
+    document.addEventListener('click', (e) => {
+      const wrapper = document.getElementById('projectSwitcherWrapper');
+      const menu = document.getElementById('projectDropdownMenu');
+      if (wrapper && menu && !wrapper.contains(e.target)) {
+        menu.classList.add('hidden');
+      }
+    });
+
+    function handleProjectSelect(event, newProjectId) {
+      if (event) event.preventDefault();
+      const menu = document.getElementById('projectDropdownMenu');
+      if (menu) menu.classList.add('hidden');
+
+      if (newProjectId === PROJECT_ID) return;
+
+      if (window.location.protocol === 'file:' || window.location.pathname.endsWith('.html')) {
+        window.location.search = `?project_id=${newProjectId}`;
+      } else {
+        window.location.href = `/${newProjectId}`;
+      }
+    }
 
     function switchView(viewName) {
       currentView = viewName;
@@ -1005,16 +1185,38 @@
         projectMeta = json.project || projectMeta;
         document.getElementById('projectTitle').innerText = projectMeta.name || PROJECT_ID;
         document.getElementById('sidebarProjectName').innerText = projectMeta.name || PROJECT_ID;
-        document.title = `${projectMeta.name || PROJECT_ID} - Mini CRM`;
+        document.title = `${projectMeta.name || PROJECT_ID} - Smax AI CRM`;
+
+        const isAbera = (PROJECT_ID === 'abera' || projectMeta.currency === 'IDR');
+        const flag = isAbera ? '🇮🇩' : '🇲🇾';
 
         const badgeEl = document.getElementById('projectBadge');
-        if (badgeEl) {
-          const flag = (projectMeta.currency === 'IDR' || PROJECT_ID === 'abera') ? '🇮🇩' : '🇲🇾';
-          badgeEl.innerText = `${flag} Livechat CRM`;
+        if (badgeEl) badgeEl.innerText = `${flag} Livechat CRM`;
+
+        const flagEl = document.getElementById('projectBadgeFlag');
+        if (flagEl) flagEl.innerText = flag;
+
+        const sideFlagEl = document.getElementById('sidebarProjectFlag');
+        if (sideFlagEl) sideFlagEl.innerText = flag;
+
+        // Checkmark in project switcher dropdown
+        const checkFitgum = document.getElementById('checkFitgum');
+        const checkAbera = document.getElementById('checkAbera');
+        if (checkFitgum && checkAbera) {
+          checkFitgum.classList.toggle('hidden', isAbera);
+          checkAbera.classList.toggle('hidden', !isAbera);
         }
-        const logoEl = document.getElementById('projectLogo');
-        if (logoEl) {
-          logoEl.innerText = (projectMeta.name || PROJECT_ID).trim()[0].toUpperCase();
+
+        // Update Webhook URL display
+        const webhookDisplay = document.getElementById('adsWebhookUrlDisplay');
+        if (webhookDisplay) {
+          webhookDisplay.innerText = `https://metabizai-smax.vercel.app/api/ads-webhook?project_id=${PROJECT_ID}`;
+        }
+
+        // Pre-select currencies if not explicitly chosen
+        const selectRev = document.getElementById('selectRevCurrency');
+        if (selectRev && !localStorage.getItem(`crm_rev_curr_${PROJECT_ID}`)) {
+          selectRev.value = isAbera ? 'IDR' : 'RM';
         }
 
         allLeads = json.leads || [];
@@ -2104,6 +2306,18 @@
       document.getElementById('drawerPhone').innerText = `${lead.phone || lead.tid}`;
       document.getElementById('drawerAvatar').innerText = (lead.customer_name || 'KH').substring(0, 2).toUpperCase();
 
+      // WhatsApp Direct Link
+      const waBtn = document.getElementById('drawerWhatsAppDirectBtn');
+      if (waBtn) {
+        const cleanPhone = (lead.phone || '').replace(/[^0-9]/g, '');
+        if (cleanPhone) {
+          waBtn.href = `https://wa.me/${cleanPhone}`;
+          waBtn.classList.remove('hidden');
+        } else {
+          waBtn.classList.add('hidden');
+        }
+      }
+
       // Funnel badge in drawer
       const fStepBadge = document.getElementById('drawerFunnelStepBadge');
       fStepBadge.innerHTML = getFunnelBadge(lead.funnel_step_num || 1, lead.funnel_step);
@@ -2116,15 +2330,17 @@
         standardBox.classList.add('hidden');
         orderCard.classList.remove('hidden');
 
-        const curr = projectMeta.currency || 'RM';
+        const curr = projectMeta.currency || (PROJECT_ID === 'abera' ? 'IDR' : 'RM');
         const info = extractOrderShipping(lead);
         activeOrderData = { ...info, currency: curr, tid: lead.tid, customer_name: lead.customer_name };
 
         document.getElementById('orderCardCombo').innerText = info.combo;
-        document.getElementById('orderCardAmount').innerText = `${curr} ${Number(info.amount || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+        document.getElementById('orderCardAmount').innerText = `${curr} ${Number(info.amount || 0).toLocaleString(undefined, { minimumFractionDigits: 0 })}`;
         document.getElementById('orderCardRecipient').innerText = info.recipient;
         document.getElementById('orderCardPhone').innerText = info.phone;
         document.getElementById('orderCardAddress').innerText = info.address;
+        
+        switchDrawerTab('order');
       } else {
         orderCard.classList.add('hidden');
         standardBox.classList.remove('hidden');
@@ -2133,7 +2349,22 @@
         document.getElementById('drawerStatusBadge').innerHTML = getStatusBadge(lead.conversation_result);
         document.getElementById('drawerIntent').innerText = lead.main_intent || 'Hỏi thông tin';
         document.getElementById('drawerDropoff').innerText = lead.dropoff_reason || '—';
+        
+        switchDrawerTab('chat');
       }
+
+      // AI Bóc Tách Tab Population
+      const aiFunnelEl = document.getElementById('drawerAiFunnelText');
+      if (aiFunnelEl) aiFunnelEl.innerText = lead.funnel_step || 'Step 1: Tiếp cận & Chào mừng';
+      
+      const aiIntentEl = document.getElementById('drawerAiIntentText');
+      if (aiIntentEl) aiIntentEl.innerText = lead.main_intent || 'Chưa ghi nhận nhu cầu cụ thể';
+      
+      const aiDropoffEl = document.getElementById('drawerAiDropoffText');
+      if (aiDropoffEl) aiDropoffEl.innerText = lead.dropoff_reason || 'Không phát hiện điểm nghẽn';
+      
+      const aiEvidenceEl = document.getElementById('drawerAiEvidenceText');
+      if (aiEvidenceEl) aiEvidenceEl.innerText = lead.key_evidence || 'Hội thoại đang diễn ra bình thường.';
 
       // WhatsApp Chat View
       const chatContainer = document.getElementById('drawerChatMessages');
@@ -2156,10 +2387,10 @@
           const div = document.createElement('div');
           div.className = `flex flex-col ${isCustomer ? 'items-start' : 'items-end'}`;
           div.innerHTML = `
-            <div class="max-w-[85%] rounded-2xl px-3.5 py-2 text-xs shadow-sm ${
-              isCustomer ? 'bg-white text-slate-800 rounded-tl-sm' : 'bg-[#dcf8c6] text-slate-900 rounded-tr-sm'
+            <div class="max-w-[85%] rounded-2xl px-3.5 py-2 text-xs shadow-xs ${
+              isCustomer ? 'bg-white text-slate-800 rounded-tl-sm border border-slate-200/60' : 'bg-[#dcf8c6] text-slate-900 rounded-tr-sm border border-emerald-200/60'
             }">
-              <div class="font-semibold text-[10px] text-slate-400 mb-0.5">${m.sender || (isCustomer ? 'Khách hàng' : 'AI Assistant')}</div>
+              <div class="font-semibold text-[10px] text-slate-400 mb-0.5">${m.sender || (isCustomer ? 'Khách hàng' : 'Smax AI Assistant')}</div>
               <p class="whitespace-pre-wrap leading-relaxed">${escapeHtml(m.text)}</p>
               <div class="text-[9px] text-slate-400 text-right mt-1">${time}</div>
             </div>

@@ -17,25 +17,27 @@ description: |
   - "đồng bộ quảng cáo smax", "meta ads smax", "hứng dữ liệu quảng cáo smax", "báo cáo ads campaign"
   - "roas crm smax", "meta_ads_insights", "smax api connector ads", "bảng quảng cáo neon"
   - "đồng bộ tiền tệ smax", "chuẩn hóa roas vnd", "currency sync smax", "tỷ giá token ai smax"
+  - "ui-ux crm smax", "giao diện crm smax", "evondev ui-ux crm", "favicon smax crm", "multi-project crm smax"
 ---
 
 # Smax WhatsApp Livechat & Meta Ads to Vercel/Neon Mini-CRM & AI Automation
 
 ## 1. Goal
 
-Thay thế 100% luồng Google Sheet & Google Apps Script bằng **hệ thống Mini-CRM độc lập, tốc độ cao trên Vercel Serverless Functions + Neon Serverless Postgres**, tích hợp **AI Server Token.ai (GPT-5)** phân tích ngữ nghĩa sâu hội thoại WhatsApp, **đồng bộ dữ liệu Meta Ads Insights (19 cột)** từ Smax API Connector, và **chuẩn hóa tiền tệ đa quốc gia về VNĐ** để tính ROAS chính xác.
+Thay thế 100% luồng Google Sheet & Google Apps Script bằng **hệ thống Mini-CRM độc lập, tốc độ cao trên Vercel Serverless Functions + Neon Serverless Postgres**, tích hợp **AI Server Token.ai (GPT-5)** phân tích ngữ nghĩa sâu hội thoại WhatsApp, **đồng bộ dữ liệu Meta Ads Insights (19 cột)** từ Smax API Connector, **chuẩn hóa tiền tệ đa quốc gia về VNĐ** để tính ROAS chính xác, và **áp dụng chuẩn thiết kế UI/UX Evondev cao cấp cùng nhận diện thương hiệu Smax.ai**.
 
 Hệ thống cung cấp:
 1. **Zero Quota Limits**: Lưu trữ không giới hạn hội thoại và bản ghi quảng cáo trên Postgres, loại bỏ hoàn toàn giới hạn 500KB và 6 phút timeout của Google Apps Script.
-2. **Multi-Tenant (Đa Dự Án)**: Một hệ thống duy nhất quản lý hàng chục dự án thông qua URL slug riêng biệt (`https://your-crm.vercel.app/{project_id}`) kèm mã PIN bảo mật.
-3. **Tự Động Kích Hoạt AI Token.ai (GPT-5)**: Ngay khi dự án mới được khởi tạo trên Neon Postgres, hệ thống AI Server Token.ai (`https://token.ai.vn/v1`, Model `gpt-5`) được tự động kích hoạt để bóc tách nhu cầu, địa chỉ COD, phân loại phễu và điểm nghẽn.
-4. **Hỗ Trợ Toàn Diện OpenAI SDK Python & Node.js**: Cung cấp module chuẩn OpenAI SDK Python độc lập (`resources/ai-analysis-engine.py`) và tích hợp trực tiếp trong Vercel Serverless Engine.
-5. **Phễu Chuyển Đổi 7 Bước (/whatsapp-funnel-engine)**: Tự động phân loại từng hội thoại vào 7 nấc phễu và chẩn đoán điểm nghẽn (bottlenecks).
-6. **Đồng Bộ Dữ Liệu Báo Cáo Meta Ads (19 Cột Chuẩn)**: Tiếp nhận dữ liệu Meta Ads Insights từ Smax API Connector qua endpoint Vercel Webhook (`api/ads-webhook.js`), lưu trữ vào bảng `meta_ads_insights`.
-7. **Đối Soát Quảng Cáo & Hội Thoại Toàn Diện (Attribution Join)**: Tự động `FULL OUTER JOIN` giữa bảng `leads` và `meta_ads_insights` theo `ad_id` để đo lường chính xác **ROAS, Blended CPA, CPL** và phát hiện các mẫu quảng cáo chuyển đổi cao (Top Converters) hoặc chi tiêu nhiều mà không ra đơn.
-8. **Chuẩn Hóa Tiền Tệ Đa Quốc Gia Về VNĐ Bằng Token.ai (3 Bước)**: Xóa bỏ sự lệch pha giữa tiền tài khoản Ads (VND, USD) và tiền thu COD thị trường (RM, IDR, THB). Tự động lấy tỷ giá thị trường thực tế qua Token.ai GPT-5 để quy đổi đồng bộ và tính toán ROAS, CPA, CPL chuẩn xác 100%.
-9. **Cơ Chế Đồng Bộ 3 Tầng Dự Phòng (Triple Redundancy)**: Tự động quét 15 phút/lần 24/7 bằng GitHub Actions, quét ngầm 3 phút/lần khi mở trình duyệt, và hỗ trợ quét tức thì.
-10. **Dual BotAPI Gắn Tag Chống Trùng Lặp 3 Tầng (Strict Idempotency)**: Gắn tag `"Thành công"` và `"Có nhu cầu"` trên Smax chỉ đúng 1 lần duy nhất.
+2. **Multi-Tenant & Instant Project Switcher**: Một hệ thống duy nhất quản lý hàng chục dự án thông qua URL slug riêng biệt (`https://your-crm.vercel.app/{project_id}`) kèm mã PIN bảo mật và menu chuyển đổi dự án tức thì trên Header (ví dụ: Fitgum Malaysia 🇲🇾 và Abera Indonesia 🇮🇩).
+3. **Chuẩn Thiết Kế UI/UX Evondev & Smax Branding**: Tích hợp favicon & logo chính thức của Smax.ai (`https://i.ibb.co/tTXsDCSP/LOGO-SMAX-AI-MOBLE-N-N-TR-NG-08.png`), bộ font đôi `Plus Jakarta Sans` + `JetBrains Mono`, đổ bóng nhẹ `shadow-xs/sm`, và Off-canvas Drawer 3 tab chuyên biệt (`[ 📦 Đơn Hàng COD ]`, `[ 💬 Lịch Sử Chat ]`, `[ 🧠 AI Bóc Tách ]`) kèm nút nhảy thẳng vào WhatsApp (`wa.me/{phone}`).
+4. **Tự Động Kích Hoạt AI Token.ai (GPT-5)**: Ngay khi dự án mới được khởi tạo trên Neon Postgres, hệ thống AI Server Token.ai (`https://token.ai.vn/v1`, Model `gpt-5`) được tự động kích hoạt để bóc tách nhu cầu, địa chỉ COD, phân loại phễu và điểm nghẽn.
+5. **Hỗ Trợ Toàn Diện OpenAI SDK Python & Node.js**: Cung cấp module chuẩn OpenAI SDK Python độc lập (`resources/ai-analysis-engine.py`) và tích hợp trực tiếp trong Vercel Serverless Engine.
+6. **Phễu Chuyển Đổi 7 Bước (/whatsapp-funnel-engine)**: Tự động phân loại từng hội thoại vào 7 nấc phễu và chẩn đoán điểm nghẽn (bottlenecks).
+7. **Đồng Bộ Dữ Liệu Báo Cáo Meta Ads (19 Cột Chuẩn)**: Tiếp nhận dữ liệu Meta Ads Insights từ Smax API Connector qua endpoint Vercel Webhook (`api/ads-webhook.js`), lưu trữ vào bảng `meta_ads_insights`.
+8. **Đối Soát Quảng Cáo & Hội Thoại Toàn Diện (Attribution Join)**: Tự động `FULL OUTER JOIN` giữa bảng `leads` và `meta_ads_insights` theo `ad_id` để đo lường chính xác **ROAS, Blended CPA, CPL** và phát hiện các mẫu quảng cáo chuyển đổi cao (Top Converters) hoặc chi tiêu nhiều mà không ra đơn.
+9. **Chuẩn Hóa Tiền Tệ Đa Quốc Gia Về VNĐ Bằng Token.ai (3 Bước)**: Xóa bỏ sự lệch pha giữa tiền tài khoản Ads (VND, USD) và tiền thu COD thị trường (RM, IDR, THB). Tự động lấy tỷ giá thị trường thực tế qua Token.ai GPT-5 để quy đổi đồng bộ và tính toán ROAS, CPA, CPL chuẩn xác 100%.
+10. **Cơ Chế Đồng Bộ 3 Tầng Dự Phòng (Triple Redundancy)**: Tự động quét 15 phút/lần 24/7 bằng GitHub Actions, quét ngầm 3 phút/lần khi mở trình duyệt, và hỗ trợ quét tức thì.
+11. **Dual BotAPI Gắn Tag Chống Trùng Lặp 3 Tầng (Strict Idempotency)**: Gắn tag `"Thành công"` và `"Có nhu cầu"` trên Smax chỉ đúng 1 lần duy nhất.
 
 ---
 
@@ -70,9 +72,10 @@ flowchart TD
         MetaAdsTable[("Table: meta_ads_insights<br/>- 19 cột chuẩn Meta Ads Insights<br/>- Spend, Impressions, Clicks, CPC, CPM<br/>- Actions, Reach, CTR")]
     end
 
-    subgraph UI ["Giao Diện Mini-CRM (src/crm.html)"]
+    subgraph UI ["Giao Diện Mini-CRM (src/crm.html) - Chuẩn Evondev /ui-ux"]
+        Header["Header Đa Năng:<br/>- Favicon & Logo Smax.ai<br/>- Project Switcher (Fitgum 🇲🇾 & Abera 🇮🇩)<br/>- Nút Đồng Bộ Tiền Tệ VNĐ (Token.ai)"]
         Sidebar["Sidebar Điều Hướng:<br/>1. Tổng Quan (KPI + Linechart + Table)<br/>2. Phễu Chuyển Đổi (7 Bước + Bottleneck)<br/>3. Báo Cáo Ads Campaign (Ad_ID ROI + ROAS)"]
-        Drawer["Chat Drawer:<br/>- Full Card Đơn Hàng COD<br/>- WhatsApp Chat History"]
+        Drawer["Off-Canvas Drawer (3 Tabs Chuyên Biệt):<br/>- Tab 1: 📦 Đơn Hàng COD (1-Click Copy)<br/>- Tab 2: 💬 Lịch Sử Chat (WhatsApp Bubbles)<br/>- Tab 3: 🧠 AI Bóc Tách (GPT-5 7 Bước Phễu)<br/>- Nút Mở WhatsApp Chat Trực Tiếp (wa.me)"]
     end
 
     GH_Cron --> SyncAPI
@@ -292,7 +295,25 @@ npx vercel --prod --yes
 
 ---
 
-### Bước 8: Kiểm Thử & Nghiệm Thu Hệ Thống (E2E Verification)
+### Bước 8: Chuẩn Hóa Giao Diện UI/UX Dashboard Theo Evondev & Nhận Diện Smax.ai
+1. **Logo & Favicon Chuẩn**:
+   - Sử dụng favicon chính thức của Smax: `https://i.ibb.co/tTXsDCSP/LOGO-SMAX-AI-MOBLE-N-N-TR-NG-08.png`.
+   - Giữ nguyên ảnh logo trên Header, không dùng chữ ký tự đầu (initials) đè lên ảnh.
+2. **Typography & Bố Cục Thẻ (Evondev /ui-ux)**:
+   - Import font `Plus Jakarta Sans` cho toàn bộ văn bản và `JetBrains Mono` cho số điện thoại, Ad_ID, tiền tệ, thời gian.
+   - Thẻ hiển thị màu nền trắng `bg-white`, viền `border-slate-200/80`, bo góc mềm `rounded-2xl`, bóng mờ tinh tế `shadow-xs` / `shadow-sm` (tuyệt đối không dùng bóng đậm đen thô kệch).
+3. **Bộ Chuyển Đổi Dự Án Tức Thì (Instant Project Switcher)**:
+   - Dropdown trên Top Header và Sidebar cho phép chuyển đổi mượt mà giữa các thị trường đang chạy (ví dụ: Fitgum Malaysia 🇲🇾 và Abera Indonesia 🇮🇩).
+   - Tự động lưu và nhận diện PIN đăng nhập độc lập cho từng dự án, cập nhật tức thì cờ quốc gia, đơn vị tiền tệ (`RM` hoặc `IDR`) và mẫu Webhook URL.
+4. **Off-Canvas Drawer 3 Tabs Chuyên Biệt**:
+   - **Nút Mở WhatsApp Chat Trực Tiếp**: Mở `https://wa.me/{cleanPhone}` trong tab mới để nhân viên sale phản hồi tức khắc.
+   - **Tab 1: 📦 Đơn Hàng COD**: Hiển thị thẻ đơn hàng đầy đủ, thông tin người nhận, địa chỉ giao hàng, số tiền COD, và nút 1-click copy địa chỉ tiện lợi cho khâu vận chuyển.
+   - **Tab 2: 💬 Lịch Sử Chat**: Dựng bong bóng tin nhắn WhatsApp phân tách rõ ràng giữa Tư vấn viên (`Customer Service / Smax AI`) và Khách hàng (`Customer`), kèm thời gian gửi chuẩn.
+   - **Tab 3: 🧠 AI Bóc Tách**: Báo cáo phân tích chuyên sâu của Token.ai GPT-5 (Bước phễu hiện tại, Bằng chứng trích dẫn, Điểm nghẽn rơi rụng).
+
+---
+
+### Bước 9: Kiểm Thử & Nghiệm Thu Hệ Thống (E2E Verification)
 1. **Kiểm tra API Sync & AI Integration**:
    `curl "https://your-domain.vercel.app/api/sync?project_id={id}"` $\rightarrow$ Trả về `success: true` kèm số lượng leads được đồng bộ và phân tích.
 2. **Kiểm tra API Meta Ads Webhook**:
@@ -301,8 +322,10 @@ npx vercel --prod --yes
    `curl -X POST "https://your-domain.vercel.app/api/ads-webhook?project_id={id}" -H "Content-Type: application/json" -d "{}"` $\rightarrow$ Trả về HTTP 200 `{ success: true, message: "Ping acknowledged" }`.
 4. **Kiểm tra Chống Lặp BotAPI**:
    Chạy `/api/botapi-tagger` 2 lần liên tiếp $\rightarrow$ Lần 1 gắn tag cho lead mới, lần 2 trả về `taggedThisRun: { success: 0, demand: 0 }` (0 cuộc gọi trùng lặp).
-5. **Kiểm tra Giao Diện**:
-   Mở link `https://your-domain.vercel.app/{id}`, đăng nhập mã PIN, kiểm tra hiển thị 3 tab sidebar, biểu đồ ROAS, các badge phễu 7 bước và nút bấm lọc theo Ad_ID.
+5. **Kiểm tra Giao Diện & Bộ Chuyển Đổi Dự Án**:
+   - Mở link `https://your-domain.vercel.app/{id}`, đăng nhập mã PIN, kiểm tra hiển thị 3 tab sidebar, biểu đồ ROAS, các badge phễu 7 bước và nút bấm lọc theo Ad_ID.
+   - Bấm vào menu chuyển đổi dự án để chuyển giữa Fitgum và Abera $\rightarrow$ Giao diện cập nhật cờ quốc gia, tỷ giá tiền tệ và dữ liệu khách hàng tương ứng.
+   - Bấm vào bất kỳ khách hàng nào $\rightarrow$ Drawer mở ra mượt mà với 3 tab: `[ 📦 Đơn Hàng COD ]`, `[ 💬 Lịch Sử Chat ]`, `[ 🧠 AI Bóc Tách ]` và nút bấm chat WhatsApp.
 
 ---
 
@@ -314,7 +337,11 @@ npx vercel --prod --yes
 - 🚫 **KHÔNG** gọi Smax BotAPI nếu khách hàng đã có tag tương ứng hoặc `tagged_*_at IS NOT NULL`.
 - 🚫 **KHÔNG** đếm raw tin nhắn khi chưa lọc qua hàm `isSystemMessage()`.
 - 🚫 **KHÔNG** để lỗi kết nối AI hoặc lỗi format Ads làm sập hệ thống; luôn có fallback và data sanitization an toàn.
+- 🚫 **KHÔNG** ghi đè ảnh logo Smax bằng ký tự tắt (initial text) trong code JavaScript.
+- 🚫 **KHÔNG** sử dụng hiệu ứng đổ bóng đen đậm thô kệch (`shadow-xl/2xl` nặng nề); tuân thủ nguyên tắc `M15` trong `/ui-ux` với bóng mờ tinh tế (`shadow-xs` / `shadow-sm`).
 - 🚫 **KHÔNG** lộ thông tin mật khẩu hoặc secret key trong các file mã nguồn công khai (sử dụng biến môi trường `DATABASE_URL`, `SMAX_EMAIL`, `SMAX_PASSWORD`).
+- ✅ **LUÔN** sử dụng Favicon chính thức của Smax: `https://i.ibb.co/tTXsDCSP/LOGO-SMAX-AI-MOBLE-N-N-TR-NG-08.png`.
+- ✅ **LUÔN** áp dụng font `Plus Jakarta Sans` cho UI và `JetBrains Mono` cho mã số, số điện thoại và dữ liệu tài chính.
 - ✅ **LUÔN** tự động kích hoạt cấu hình Token.ai (`gpt-5`) khi khởi tạo bản ghi dự án mới trên Neon Postgres.
 - ✅ **LUÔN** sắp xếp mặc định hội thoại theo `last_msg_at DESC` để tư vấn viên thấy khách hàng mới nhất ngay trên cùng.
 - ✅ **LUÔN** phân loại hội thoại vào 7 bước chuẩn của `/whatsapp-funnel-engine`.
@@ -325,6 +352,7 @@ npx vercel --prod --yes
 
 ## 5. Tài Nguyên Đi Kèm (Resources)
 
+- [resources/ui-ux-design-system.md](resources/ui-ux-design-system.md): Quy chuẩn thiết kế UI/UX theo Evondev, bảng màu, typography, bộ chuyển đổi dự án, và kiến trúc Drawer 3 tab.
 - [resources/neon-schema.sql](resources/neon-schema.sql): Cấu trúc database chuẩn Neon Postgres (projects, leads, meta_ads_insights, indexes và unique constraints).
 - [resources/currency-sync-setup.md](resources/currency-sync-setup.md): Hướng dẫn thiết lập đồng bộ tiền tệ đa quốc gia (Ads vs CRM) và chuẩn hóa ROAS về VNĐ qua Token.ai GPT-5.
 - [resources/smax-ads-connector-setup.md](resources/smax-ads-connector-setup.md): Hướng dẫn chi tiết thiết lập Smax API Connector đẩy 19 cột Meta Ads sang Mini-CRM.
@@ -334,4 +362,4 @@ npx vercel --prod --yes
 - [resources/github-cron-setup.md](resources/github-cron-setup.md): Hướng dẫn thiết lập GitHub Actions 15-phút cron chạy 24/7.
 - [examples/fitgum-complete-implementation.md](examples/fitgum-complete-implementation.md): Hồ sơ triển khai thực tế dự án Fitgum Malaysia (115 leads, 3 đơn chốt, 8 Ads, ROAS 3.88x, AI GPT-5).
 
-<!-- Generated by Skill Creator Ultra v2.0 (Meta Ads & Token.ai GPT-5 Edition) -->
+<!-- Generated by Skill Creator Ultra v2.0 (Meta Ads, Token.ai GPT-5 & Evondev UI/UX Edition) -->

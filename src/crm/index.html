@@ -65,17 +65,29 @@
 
         <div>
           <div class="flex items-center space-x-2">
-            <!-- Project Dropdown Switcher -->
+            <!-- Project Identity Badge (Client Default) & Switcher (Admin Only) -->
             <div class="relative inline-block text-left" id="projectSwitcherWrapper">
-              <button onclick="toggleProjectDropdown()" class="flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700/80 text-white text-xs font-bold border border-slate-700 transition" id="projectDropdownBtn">
+              <!-- Client Mode: Static Clean Badge (No dropdown, no arrow, cursor-default) -->
+              <div id="projectStaticBadge" class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 text-white text-xs font-bold border border-slate-700 shadow-xs cursor-default">
                 <span id="projectBadgeFlag">🇲🇾</span>
-                <span id="projectTitle" class="truncate max-w-[140px] sm:max-w-[200px]">Fitgum Acai Berry</span>
+                <span id="projectTitle" class="truncate max-w-[150px] sm:max-w-[220px]">Đang tải...</span>
+              </div>
+
+              <!-- Admin Mode: Dropdown Switcher Button (Hidden by default, shown only if Admin) -->
+              <button id="projectAdminDropdownBtn" onclick="toggleProjectDropdown()" class="hidden items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-amber-500/50 shadow-sm transition ring-1 ring-amber-500/30" title="Chế độ Quản Trị: Bấm để chuyển dự án">
+                <span class="text-amber-400">👑</span>
+                <span id="projectAdminBadgeFlag">🇲🇾</span>
+                <span id="projectAdminTitle" class="truncate max-w-[140px] sm:max-w-[200px]">Đang tải...</span>
+                <span class="text-[9px] bg-amber-500/20 text-amber-300 px-1 py-0.5 rounded font-mono font-normal">ADMIN</span>
                 <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
               </button>
               
-              <!-- Dropdown Menu -->
-              <div id="projectDropdownMenu" class="hidden absolute left-0 mt-1 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 py-1 divide-y divide-slate-800">
-                <div class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-slate-400">Chọn Dự Án Đang Chạy</div>
+              <!-- Dropdown Menu (Strictly hidden for clients, only toggled in Admin Mode) -->
+              <div id="projectDropdownMenu" class="hidden absolute left-0 mt-1.5 w-64 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 py-1 divide-y divide-slate-800">
+                <div class="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-amber-400 flex items-center justify-between">
+                  <span>👑 Chọn Dự Án (Admin)</span>
+                  <button type="button" onclick="exitAdminMode()" class="text-slate-400 hover:text-white text-[10px] lowercase underline">thoát admin</button>
+                </div>
                 <a href="/fitgum" onclick="handleProjectSelect(event, 'fitgum')" class="flex items-center justify-between px-3 py-2 text-xs text-slate-200 hover:bg-slate-800 transition">
                   <div class="flex items-center gap-2">
                     <span class="text-base">🇲🇾</span>
@@ -139,6 +151,10 @@
         <button onclick="exportToCSV()" class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs sm:text-sm font-medium rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm transition">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
           <span class="hidden sm:inline">Xuất Excel</span>
+        </button>
+        <!-- Admin Mode Unlock / Switch Button (Subtle lock/crown icon) -->
+        <button id="btnAdminToggle" onclick="toggleAdminModeAuth()" class="p-1.5 text-slate-400 hover:text-amber-400 rounded-lg hover:bg-slate-800 transition" title="Đăng nhập Chế độ Quản Trị (Admin)">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
         </button>
         <button onclick="logoutPin()" class="p-1.5 text-slate-400 hover:text-white rounded-lg hover:bg-slate-800 transition" title="Đổi mã PIN">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
@@ -1049,9 +1065,11 @@
   <script>
     // Extract project_id from URL path: /fitgum or /?project_id=fitgum
     function getProjectIdFromUrl() {
-      const pathParts = window.location.pathname.split('/').filter(Boolean);
-      if (pathParts.length > 0 && pathParts[0] !== 'crm') {
-        return pathParts[0].toLowerCase();
+      if (window.location.protocol !== 'file:') {
+        const pathParts = window.location.pathname.split('/').filter(Boolean);
+        if (pathParts.length > 0 && pathParts[0] !== 'crm') {
+          return pathParts[0].toLowerCase();
+        }
       }
       const params = new URLSearchParams(window.location.search);
       return (params.get('project_id') || 'fitgum').toLowerCase();
@@ -1103,7 +1121,81 @@
       });
     }
 
+    // Admin Mode Controller
+    function checkIsAdmin() {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('admin') === '1' || urlParams.get('admin') === 'true') {
+        sessionStorage.setItem('crm_is_admin', 'true');
+        return true;
+      }
+      if (urlParams.get('admin') === '0' || urlParams.get('admin') === 'false') {
+        sessionStorage.removeItem('crm_is_admin');
+        return false;
+      }
+      return sessionStorage.getItem('crm_is_admin') === 'true';
+    }
+
+    let isAdmin = checkIsAdmin();
+
+    function updateAdminUI() {
+      const staticBadge = document.getElementById('projectStaticBadge');
+      const adminBtn = document.getElementById('projectAdminDropdownBtn');
+      const dropdownMenu = document.getElementById('projectDropdownMenu');
+      const adminToggleBtn = document.getElementById('btnAdminToggle');
+
+      if (isAdmin) {
+        if (staticBadge) staticBadge.classList.add('hidden');
+        if (adminBtn) {
+          adminBtn.classList.remove('hidden');
+          adminBtn.classList.add('flex');
+        }
+        if (adminToggleBtn) {
+          adminToggleBtn.className = 'p-1.5 text-amber-400 bg-amber-500/15 ring-1 ring-amber-500/30 rounded-lg hover:bg-amber-500/25 transition';
+          adminToggleBtn.title = '👑 Chế độ Admin đang BẬT (Menu chuyển dự án hiển thị). Bấm để thoát Admin';
+        }
+      } else {
+        if (staticBadge) staticBadge.classList.remove('hidden');
+        if (adminBtn) {
+          adminBtn.classList.add('hidden');
+          adminBtn.classList.remove('flex');
+        }
+        if (dropdownMenu) dropdownMenu.classList.add('hidden');
+        if (adminToggleBtn) {
+          adminToggleBtn.className = 'p-1.5 text-slate-400 hover:text-amber-400 rounded-lg hover:bg-slate-800 transition';
+          adminToggleBtn.title = 'Đăng nhập Chế độ Quản Trị (Admin)';
+        }
+      }
+    }
+
+    function toggleAdminModeAuth() {
+      if (isAdmin) {
+        if (confirm('Bạn đang ở Chế độ Quản Trị Viên (Admin).\n\nBạn có muốn THOÁT Chế độ Admin để trở về giao diện sạch của Khách Hàng không?')) {
+          exitAdminMode();
+        }
+      } else {
+        const pin = prompt('Nhập mã Master PIN để mở khóa Chế độ Quản Trị Viên (Admin):');
+        if (pin === '1609' || pin === 'admin') {
+          sessionStorage.setItem('crm_is_admin', 'true');
+          isAdmin = true;
+          updateAdminUI();
+          alert('👑 Đã kích hoạt Chế độ Quản Trị Viên thành công!\n\nMenu chuyển đổi giữa các dự án đã được hiển thị trên thanh điều hướng.');
+        } else if (pin !== null && pin !== '') {
+          alert('Mã PIN không chính xác.');
+        }
+      }
+    }
+
+    function exitAdminMode() {
+      sessionStorage.removeItem('crm_is_admin');
+      isAdmin = false;
+      updateAdminUI();
+      const url = new URL(window.location.href);
+      url.searchParams.delete('admin');
+      window.history.replaceState({}, '', url.pathname + (url.search ? url.search : ''));
+    }
+
     function toggleProjectDropdown() {
+      if (!isAdmin) return;
       const menu = document.getElementById('projectDropdownMenu');
       if (menu) menu.classList.toggle('hidden');
     }
@@ -1124,10 +1216,11 @@
 
       if (newProjectId === PROJECT_ID) return;
 
+      const adminParam = isAdmin ? '?admin=1' : '';
       if (window.location.protocol === 'file:' || window.location.pathname.endsWith('.html')) {
-        window.location.search = `?project_id=${newProjectId}`;
+        window.location.search = `?project_id=${newProjectId}${isAdmin ? '&admin=1' : ''}`;
       } else {
-        window.location.href = `/${newProjectId}`;
+        window.location.href = `/${newProjectId}${adminParam}`;
       }
     }
 
@@ -1193,9 +1286,13 @@
         }
 
         projectMeta = json.project || projectMeta;
-        document.getElementById('projectTitle').innerText = projectMeta.name || PROJECT_ID;
-        document.getElementById('sidebarProjectName').innerText = projectMeta.name || PROJECT_ID;
-        document.title = `${projectMeta.name || PROJECT_ID} - Smax AI CRM`;
+        const pName = projectMeta.name || PROJECT_ID;
+        document.getElementById('projectTitle').innerText = pName;
+        const adminTitleEl = document.getElementById('projectAdminTitle');
+        if (adminTitleEl) adminTitleEl.innerText = pName;
+
+        document.getElementById('sidebarProjectName').innerText = pName;
+        document.title = `${pName} - Smax AI CRM`;
 
         const isAbera = (PROJECT_ID === 'abera' || projectMeta.currency === 'IDR');
         const isRedgold = (PROJECT_ID === 'redgold' || projectMeta.currency === 'PHP');
@@ -1206,9 +1303,13 @@
 
         const flagEl = document.getElementById('projectBadgeFlag');
         if (flagEl) flagEl.innerText = flag;
+        const adminFlagEl = document.getElementById('projectAdminBadgeFlag');
+        if (adminFlagEl) adminFlagEl.innerText = flag;
 
         const sideFlagEl = document.getElementById('sidebarProjectFlag');
         if (sideFlagEl) sideFlagEl.innerText = flag;
+
+        updateAdminUI();
 
         // Checkmark in project switcher dropdown
         const checkFitgum = document.getElementById('checkFitgum');
@@ -2551,6 +2652,7 @@
 
     // Auto-load on page load & setup background sync
     window.addEventListener('DOMContentLoaded', () => {
+      updateAdminUI();
       loadData();
 
       // Background periodic auto-sync every 3 minutes when page is active

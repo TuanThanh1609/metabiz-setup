@@ -339,11 +339,11 @@ module.exports = async (req, res) => {
         let pkgStr = 'Paket 2 Botol (Beli 2 Gratis 1)';
         let totalAmount = 297000;
 
-        const summaryMsg = cleanMsgs.find(m => m.message && /RINGKASAN PESANAN/i.test(m.message));
+        const summaryMsg = cleanMsgs.find(m => m.message && /RINGKASAN PESANAN|meneruskan pesanan/i.test(m.message));
         if (summaryMsg) {
           const msgTxt = summaryMsg.message;
-          const nm = msgTxt.match(/[-*•\s]*(?:Nama\s*Penerima|Penerima)[*:]*\s*:\s*\*?([^\n\*]+)\*?/i);
-          const am = msgTxt.match(/[-*•\s]*(?:Alamat\s*Pengiriman|Alamat)[*:]*\s*:\s*\*?([^\n\*]+)\*?/i);
+          const nm = msgTxt.match(/[-*•\s]*(?:Nama\s*Penerima|Penerima|atas\s*nama)[*:]*\s*\*?([^\n\*,]+)\*?/i);
+          const am = msgTxt.match(/[-*•\s]*(?:Alamat\s*Pengiriman|Alamat)[*:]*\s*\*?([^\n\*]+)\*?/i);
           const pm = msgTxt.match(/[-*•\s]*(?:Produk\s*\/\s*Paket|Produk|Paket)[*:]*\s*:\s*\*?([^\n\*]+)\*?/i);
           const tm = msgTxt.match(/[-*•\s]*(?:Total\s*Pembayaran|Total)[*:]*\s*:\s*\*?([^\n\*]+)\*?/i);
 
@@ -365,20 +365,31 @@ module.exports = async (req, res) => {
             const isCust = (m.sender_pid !== targetPagePid && m.sender_pid !== m.page_pid) || (m.sender_pid === tid) || Boolean(m.customer) || Boolean(m.from_user);
             if (isCust && m.message) {
               const txt = m.message.trim();
-              const addrM = txt.match(/(?:Alamat\s*(?:lengkap|pengiriman)?)\s*[:\.]\s*([^\n\r]+)/i);
-              if (addrM && addrM[1].trim().length > 5 && !/mimin|tunggu|data|kirim data|rekap|berapa/i.test(addrM[1])) {
-                addrStr = addrM[1].trim();
-                isAberaOrder = true;
+              const lines = txt.split(/[\r\n]+/);
+              for (const line of lines) {
+                const addrM = line.match(/(?:Alamat\s*(?:lengkap|pengiriman)?)\s*[:\.;\-]?\s*([^\n\r]+)/i);
+                if (addrM && addrM[1].trim().length > 5 && !/mimin|tunggu|data|kirim data|rekap|berapa/i.test(addrM[1])) {
+                  addrStr = addrM[1].trim();
+                  isAberaOrder = true;
+                }
+                const nmM = line.match(/(?:Nama\s*(?:lengkap|penerima)?|Atas\s*nama|Nm)\s*[:\.;\-]?\s*([^\n\r]+)/i);
+                if (nmM && nmM[1].trim().length < 50 && !/mimin|tunggu/i.test(nmM[1])) {
+                  custOrderName = nmM[1].trim();
+                }
+                const phM = line.match(/(?:No\s*(?:HP|WA|telepon|hp)?|Nomor\s*HP|WhatsApp)\s*[:\.;\-]?\s*([0-9\+\-\s]{9,16})/i);
+                if (phM && !custOrderPhone) {
+                  custOrderPhone = phM[1].replace(/[^0-9]/g, '');
+                }
+                const pkgCustM = line.match(/(?:pilih\s*paket|paket)\s*([123])/i);
+                if (pkgCustM) {
+                  if (pkgCustM[1] === '1') pkgStr = '1 Botol Abera Serum';
+                  else if (pkgCustM[1] === '2') pkgStr = 'Paket 2 Botol (Beli 2 Gratis 1 - Tổng 3 chai)';
+                  else if (pkgCustM[1] === '3') pkgStr = 'Paket 3 Botol (Beli 3 Gratis 1 - Tổng 4 chai)';
+                }
               }
-              const nmM = txt.match(/(?:Nama\s*(?:lengkap|penerima)?|Atas\s*nama|Nm)\s*[:\.]\s*([^\n\r]+)/i);
-              if (nmM && nmM[1].trim().length < 50 && !/mimin|tunggu/i.test(nmM[1])) {
-                custOrderName = nmM[1].trim();
-              }
-              const phM = txt.match(/(?:No\s*(?:HP|WA|telepon|hp)?|Nomor\s*HP|WhatsApp)\s*[:\.]\s*([0-9\+\-\s]{9,16})/i);
-              if (phM && !custOrderPhone) {
-                custOrderPhone = phM[1].replace(/[^0-9]/g, '');
-              }
-              if (!addrStr && /jalan|jl\.|rt|rw|kecamatan|kabupaten|kota|desa|pos|kodepos|no\.|blok|gang/i.test(txt) && txt.length >= 15) {
+
+              // Strict fallback: only if has street AND (region/city/kodepos)
+              if (!addrStr && /\b(?:jl\.|jalan|jln|gang)\b/i.test(txt) && /\b(?:rt\s*\d|rw\s*\d|kelurahan|kecamatan|kabupaten|kota|desa|kodepos|\b\d{5}\b)\b/i.test(txt) && txt.length >= 25) {
                 addrStr = txt;
                 isAberaOrder = true;
               }
@@ -397,11 +408,10 @@ module.exports = async (req, res) => {
           totalAmount = 179000;
         }
 
-        if (isAberaOrder || hasSmaxSuccessTag) {
+        if (isAberaOrder) {
           conversationResult = 'Đã chốt đơn';
           orderCombo = pkgStr;
           orderAmount = totalAmount;
-          if (!addrStr) addrStr = keyEvidence || 'Đã xác nhận địa chỉ qua chat';
           keyEvidence = addrStr;
           orderDetails = `📦 ${orderCombo} (Rp ${orderAmount.toLocaleString()}) | 👤 Người nhận: ${custOrderName} | 📞 ${custOrderPhone} | 📍 Địa chỉ: ${addrStr} | 🚚 COD Free Shipping`;
         } else if (customerMessages >= 3 || hasSmaxDemandTag) {

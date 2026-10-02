@@ -9,7 +9,8 @@
     "api/botapi-tagger.js": { "maxDuration": 30 },
     "api/ads-webhook.js": { "maxDuration": 30 },
     "api/ads.js": { "maxDuration": 30 },
-    "api/currency-sync.js": { "maxDuration": 30 }
+    "api/currency-sync.js": { "maxDuration": 30 },
+    "api/ladipage-webhook.js": { "maxDuration": 30 }
   },
   "crons": [
     {

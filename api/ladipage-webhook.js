@@ -122,7 +122,7 @@ function buildWhatsAppMessage(projectId, orderId, name, phone, address, combo, a
 📍 Alamat: ${address}
 🚚 Pengiriman: Gratis Ongkir COD (Bayar di Tempat)
 
-#XACNHANDON - Mimin mohon konfirmasi pesanan saya & kirimkan nomor resinya ya! 🙏`;
+#KONFIRMASI_PESANAN - Mimin mohon konfirmasi pesanan saya & kirimkan nomor resinya ya! 🙏`;
   } else if (projectId === 'fitgum') {
     // Bahasa Melayu / English
     return `Hi Fitgum Malaysia! 🍇 I just placed an order via Website:
@@ -133,7 +133,7 @@ function buildWhatsAppMessage(projectId, orderId, name, phone, address, combo, a
 📍 Address: ${address}
 🚚 Delivery: Free Shipping COD (Cash on Delivery)
 
-#XACNHANDON - Please confirm my order and send tracking details! 🙏`;
+#CONFIRM_ORDER - Please confirm my order and send tracking details! 🙏`;
   } else {
     // Tiếng Việt
     return `Chào shop! Tôi vừa đặt hàng qua Website:
